@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../lib/firebase';
 import useRoleGuard from '../../../../hooks/useRoleGuard';
+import { useSafeParams } from '../../../../hooks/useSafeParams';
 import DashboardLayout from '../../../../components/DashboardLayout';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -33,7 +34,7 @@ interface Prescription {
 }
 
 const DoctorPatientProfilePage = () => {
-  const { id } = useParams();
+  const id = useSafeParams('id');
   const { loading } = useRoleGuard(['doctor']);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [vitals, setVitals] = useState<Vital[]>([]);
