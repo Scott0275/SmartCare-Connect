@@ -1,67 +1,110 @@
 'use client';
 
-import { useAuth } from "../../../context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import Sidebar from "../../../components/doctor/Sidebar";
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import { db } from '../../../lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 
-const DoctorDashboard = () => {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
+interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  reason: string;
+  patientId: string;
+}
+
+interface MedicalRecord {
+  id: string;
+  type: string;
+  date: string;
+  url: string;
+  patientId: string;
+}
+
+export default function DoctorDashboard() {
+  const { user, role } = useAuth();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
 
   useEffect(() => {
-    if (!loading && (!user || role !== 'doctor')) {
-      router.push("/unauthorized");
-    }
-  }, [user, role, loading, router]);
+    const unsubscribeAppointments = onSnapshot(collection(db, 'appointments'), (querySnapshot) => {
+      const newAppointments: Appointment[] = [];
+      querySnapshot.forEach((doc) => {
+        newAppointments.push({ id: doc.id, ...doc.data() } as Appointment);
+      });
+      setAppointments(newAppointments);
+    });
 
-  if (loading || !user || role !== 'doctor') {
-    return <div>Loading...</div>; // Or a proper loading component
-  }
+    const unsubscribeMedicalRecords = onSnapshot(collection(db, 'medical_records'), (querySnapshot) => {
+      const newMedicalRecords: MedicalRecord[] = [];
+      querySnapshot.forEach((doc) => {
+        newMedicalRecords.push({ id: doc.id, ...doc.data() } as MedicalRecord);
+      });
+      setMedicalRecords(newMedicalRecords);
+    });
+
+    return () => {
+      unsubscribeAppointments();
+      unsubscribeMedicalRecords();
+    };
+  }, []);
 
   return (
-    <div className="flex bg-gray-100 dark:bg-gray-900">
-      <Sidebar />
-      <div className="flex flex-col flex-1">
-        <main className="flex-1 p-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Doctor Dashboard</h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Welcome back, Dr. Smith!</p>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-3xl font-bold text-primary">Doctor Dashboard</h1>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-1 gap-6 mt-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Total Patients</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">1,234</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Appointments Today</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">12</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Unread Messages</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">5</p>
-            </div>
-            <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Open Reports</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">3</p>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Activity</h2>
-            {/* Placeholder for recent activity feed */}
-            <div className="mt-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
-              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                <li className="px-6 py-4">New patient registered: John Doe</li>
-                <li className="px-6 py-4">Appointment confirmed with Jane Smith</li>
-                <li className="px-6 py-4">Lab results received for Michael Johnson</li>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">All Appointments</h2>
+            {appointments.length > 0 ? (
+              <ul className="space-y-4">
+                {appointments.map((apt) => (
+                  <li key={apt.id} className="p-4 border border-gray-200 rounded-md">
+                    <p className="font-semibold">Patient ID: {apt.patientId}</p>
+                    <p className="text-sm text-gray-600">Date: {new Date(apt.date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Time: {apt.time}</p>
+                    <p className="text-sm text-gray-500">Reason: {apt.reason}</p>
+                  </li>
+                ))}
               </ul>
-            </div>
+            ) : (
+              <p className="text-center text-gray-500">There are no upcoming appointments.</p>
+            )}
           </div>
 
-        </main>
-      </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">All Medical Records</h2>
+            {medicalRecords.length > 0 ? (
+              <ul className="space-y-4">
+                {medicalRecords.map((rec) => (
+                  <li key={rec.id} className="p-4 border border-gray-200 rounded-md flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">Patient ID: {rec.patientId}</p>
+                      <p className="text-sm text-gray-600">{rec.type}</p>
+                      <p className="text-sm text-gray-500">{new Date(rec.date).toLocaleDateString()}</p>
+                    </div>
+                    <a
+                      href={rec.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1 text-sm font-medium text-white bg-primary rounded-md hover:bg-teal-600"
+                    >
+                      View
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-gray-500">There are no medical records.</p>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
-};
-
-export default DoctorDashboard;
+}

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -11,7 +11,7 @@ interface AuthContextType {
   role: string | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
-  signup: (name: string, email: string, pass: string) => Promise<void>;
+  signup: (name: string, email: string, pass: string, role: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -30,12 +30,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         setUser(user);
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setRole(userData.role);
-          redirectUser(userData.role);
+          setRole(userDoc.data().role);
         } else {
           setRole(null);
-          router.push("/unauthorized");
         }
       } else {
         setUser(null);
@@ -45,38 +42,59 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
-  const redirectUser = (userRole: string) => {
+  const redirectUser = (userRole: string | null) => {
+    if (!userRole) {
+      router.push("/unauthorized");
+      return;
+    }
     switch (userRole) {
+      case "admin":
+        router.push("/admin/dashboard");
+        break;
       case "doctor":
         router.push("/doctor/dashboard");
         break;
       case "nurse":
         router.push("/nurse/dashboard");
         break;
-      case "admin":
-        router.push("/admin");
+      case "patient":
+        router.push("/patient/dashboard");
         break;
       default:
-        router.push("/unauthorized");
+        router.push("/login");
     }
   };
 
   const login = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    const loggedInUser = userCredential.user;
+    if (loggedInUser) {
+      const userDoc = await getDoc(doc(db, "users", loggedInUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setRole(userData.role);
+        redirectUser(userData.role);
+      } else {
+        setRole(null);
+        await auth.signOut();
+        router.push("/login?error=user_data_not_found");
+      }
+    }
   };
 
-  const signup = async (name: string, email: string, pass: string) => {
+  const signup = async (name: string, email: string, pass: string, role: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const user = userCredential.user;
-    await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uid: user.uid, name, email }),
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name,
+        email,
+        role: role,
     });
+    setRole(role);
+    redirectUser(role);
   };
 
   const logout = async () => {

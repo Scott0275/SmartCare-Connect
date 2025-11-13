@@ -1,38 +1,28 @@
-# Project Blueprint
+# SmartCare Connect Blueprint
 
 ## Overview
 
-This is a Next.js application with Firebase authentication and role-based access control. It includes separate dashboards for doctors, nurses, and patients, as well as a modern landing page.
+SmartCare Connect is a comprehensive healthcare management platform designed to connect patients, doctors, and nurses in a seamless and collaborative environment. This platform will provide role-based dashboards for each user type, offering tailored functionality to meet their specific needs. The application is built on the Next.js framework, utilizing Firebase for authentication and data storage. The user interface is designed to be modern, intuitive, and accessible, ensuring a positive user experience for all.
+
+## Style & Design
+
+*   **Font:** The application uses the "Inter" font with a variety of weights to create a clean and readable interface.
+*   **Color Palette:** The color scheme is based on a primary teal color, with a supporting palette of grays, oranges, greens, reds, and ambers. This creates a professional and visually appealing design.
+*   **Branding:** The "SmartCare Connect" brand is consistently applied across the application, with a prominent logo and a clear brand message.
+*   **Layout:** The layout is clean and spacious, with a focus on user-friendly navigation and a clear information hierarchy.
 
 ## Features
 
-* **Authentication:** User registration and login with Firebase.
-* **Role-based access:** Different dashboards for doctors, nurses, and patients.
-* **Modern UI:** A visually appealing and responsive design built with Tailwind CSS.
-* **Component-based architecture:** Reusable components for UI elements and authentication.
+*   **User Authentication:** Users can register and log in to the application with their email and password. The authentication system is built on Firebase Authentication, providing a secure and reliable solution.
+*   **Role-Based Registration:** Users can register as a patient, doctor, or nurse, allowing for a tailored user experience.
+*   **Homepage:** A welcoming homepage that introduces the platform and provides easy access to the login and registration pages.
+*   **Login & Registration Pages:** User-friendly forms for logging in and registering for the platform, with a consistent design and clear branding.
 
-## Design
+## Current Plan
 
-* **Styling:** Tailwind CSS for a modern, utility-first approach.
-* **Components:** Reusable components for authentication forms and dashboards.
-* **Landing Page:** A professional landing page with a clear call to action and a hero image.
+*   [x] Create role-based dashboards for admin, doctor, nurse, and patient users.
+*   [x] Create `admin/dashboard/page.tsx` with a placeholder message.
+*   [x] Create `doctor/dashboard/page.tsx` with a placeholder message.
+*   [x] Create `nurse/dashboard/page.tsx` with a placeholder message.
+*   [x] Create `patient/dashboard/page.tsx` with a placeholder message.
 
-## Plan
-
-* **Initial Setup:** The initial request was to fix a 404 error. This was caused by several issues related to Firebase authentication in a Next.js App Router environment.
-* **Fixes Implemented:**
-    * Added `"use client"` directive to `Login.tsx`, `Register.tsx`, and `withAuth.tsx`.
-    * Configured Firebase MCP by creating `.idx/mcp.json`.
-    * Modified `lib/firebaseAdmin.ts` to use `admin.initializeApp()` without arguments.
-    * Deleted the legacy API route `pages/api/auth/signup.ts`.
-    * Deleted the empty and conflicting `next.config.js` file.
-    * Corrected server-side data fetching in `app/page.tsx` to use the Firebase Admin SDK.
-    * Installed the `@tailwindcss/postcss` package and updated `postcss.config.js` to resolve a Tailwind CSS v4 build error.
-    * Corrected the invalid Next.js version in `package.json` from `16.0.1` to `14.2.3`.
-    * Downgraded React and React-DOM to `^18.2.0` to resolve dependency conflicts with Next.js.
-    * **Dependency Reset:** Performed a full dependency reset by deleting `node_modules` and `package-lock.json` and running `npm install` to resolve persistent dependency conflicts.
-    * **Refactored Firebase Admin:** Centralized Firebase Admin SDK initialization in `lib/firebaseAdmin.ts` and updated `app/page.tsx` to use the new setup. This resolved the `p is not a function` error during server-side rendering.
-* **New Features and Bugfixes:**
-    * **Patient Dashboard:** Created a new dashboard for patients, with a custom sidebar and relevant information.
-    * **Landing Page:** Designed a new landing page with a modern UI, a hero image, and clear login/register buttons.
-    * **Link Component Fix:** Corrected the usage of the Next.js `<Link>` component on the `login`, `register`, and main pages to resolve the `React.Children.only` error.
