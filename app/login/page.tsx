@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -18,7 +17,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       toast.success('Login successful!', { id: toastId });
-      router.push('/'); // Redirect to a protected dashboard
+      router.push('/'); // Redirect to dashboard or role-based route
     } catch (err) {
       toast.error(`Error: ${(err as Error).message}`, { id: toastId });
     }
@@ -28,9 +27,12 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
         <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary">SmartCare Connect</h1>
-            <p className="text-secondary mt-2">Welcome back! Please sign in to continue.</p>
+          <h1 className="text-4xl font-bold text-primary">SmartCare Connect</h1>
+          <p className="text-secondary mt-2">
+            Welcome back! Please sign in to continue.
+          </p>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
@@ -48,6 +50,7 @@ export default function LoginPage() {
               className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
           <div>
             <label
               htmlFor="password"
@@ -64,6 +67,7 @@ export default function LoginPage() {
               className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
           <button
             type="submit"
             className="w-full px-4 py-2 font-bold text-white bg-primary rounded-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
@@ -71,11 +75,13 @@ export default function LoginPage() {
             Sign In
           </button>
         </form>
-        <p className="text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-medium text-primary hover:text-teal-600">
-            Create one now
-          </Link>
+
+        {/* 🔒 No signup option */}
+        <p className="text-center text-sm text-gray-600 mt-4">
+          New users must be created by an administrator. <br />
+          <span className="text-primary font-medium">
+            Please contact your admin for access.
+          </span>
         </p>
       </div>
     </div>
