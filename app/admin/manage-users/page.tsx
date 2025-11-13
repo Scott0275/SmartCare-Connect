@@ -1,7 +1,7 @@
 'use client';
 
-import DashboardLayout from '../../../../components/DashboardLayout';
-import useRoleGuard from '../../../../hooks/useRoleGuard';
+import DashboardLayout from "@/components/DashboardLayout";
+import useRoleGuard from "@/hooks/useRoleGuard";
 import { FiEdit, FiTrash, FiUserPlus } from 'react-icons/fi';
 
 // Mock data for users
