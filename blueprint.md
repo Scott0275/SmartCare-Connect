@@ -1,28 +1,54 @@
-# SmartCare Connect Blueprint
+# Project Blueprint
 
 ## Overview
 
-SmartCare Connect is a comprehensive healthcare management platform designed to connect patients, doctors, and nurses in a seamless and collaborative environment. This platform will provide role-based dashboards for each user type, offering tailored functionality to meet their specific needs. The application is built on the Next.js framework, utilizing Firebase for authentication and data storage. The user interface is designed to be modern, intuitive, and accessible, ensuring a positive user experience for all.
+This document outlines the plan for implementing a full role-based authentication system with protected routes and correct redirects in a Next.js application.
 
-## Style & Design
+## Current State
 
-*   **Font:** The application uses the "Inter" font with a variety of weights to create a clean and readable interface.
-*   **Color Palette:** The color scheme is based on a primary teal color, with a supporting palette of grays, oranges, greens, reds, and ambers. This creates a professional and visually appealing design.
-*   **Branding:** The "SmartCare Connect" brand is consistently applied across the application, with a prominent logo and a clear brand message.
-*   **Layout:** The layout is clean and spacious, with a focus on user-friendly navigation and a clear information hierarchy.
+The application has a basic login system, but it lacks role-based access control. Public registration is enabled, and there is no mechanism to prevent users from accessing pages outside of their designated roles.
 
-## Features
+## Plan
 
-*   **User Authentication:** Users can register and log in to the application with their email and password. The authentication system is built on Firebase Authentication, providing a secure and reliable solution.
-*   **Role-Based Registration:** Users can register as a patient, doctor, or nurse, allowing for a tailored user experience.
-*   **Homepage:** A welcoming homepage that introduces the platform and provides easy access to the login and registration pages.
-*   **Login & Registration Pages:** User-friendly forms for logging in and registering for the platform, with a consistent design and clear branding.
+### 1. Disable Public Registration
 
-## Current Plan
+- **Action:** Remove the "Register" button from the login UI.
+- **File to modify:** `app/login/page.tsx`, `components/auth/Login.tsx`
+- **Action:** Delete the registration page.
+- **File to delete:** `app/register-disabled/page.tsx` (Already done)
 
-*   [x] Create role-based dashboards for admin, doctor, nurse, and patient users.
-*   [x] Create `admin/dashboard/page.tsx` with a placeholder message.
-*   [x] Create `doctor/dashboard/page.tsx` with a placeholder message.
-*   [x] Create `nurse/dashboard/page.tsx` with a placeholder message.
-*   [x] Create `patient/dashboard/page.tsx` with a placeholder message.
+### 2. Implement Admin-Only User Creation
 
+- **Action:** Create a form in `/admin/create-user` for admins to create new users.
+- **File to modify:** `app/admin/create-user/page.tsx`
+- **Action:** Update the backend to handle user creation.
+- **File to modify:** `app/api/createUser/route.ts`
+  - Create a Firebase Authentication user with email and password.
+  - Save the user's role and UID in Firestore under the `/users/{uid}` collection.
+  - Return a success or error response.
+
+### 3. Update the Login Process
+
+- **Action:** Simplify the login page to only include email and password fields.
+- **File to modify:** `app/login/page.tsx`, `components/auth/Login.tsx`
+- **Action:** After a user logs in, fetch their role from Firestore.
+- **File to modify:** `context/AuthContext.tsx`
+- **Action:** Redirect users to their respective dashboards based on their roles.
+- **File to modify:** `context/AuthContext.tsx`, `components/auth/Login.tsx`
+
+### 4. Implement Route Protection
+
+- **Action:** Create a mechanism to protect routes based on user roles.
+- **File to create/modify:** `hooks/useRoleGuard.ts`
+- **Action:** Apply the route protection to all role-specific pages.
+- **Files to modify:** All dashboard pages (e.g., `app/admin/dashboard/page.tsx`, `app/doctor/dashboard/page.tsx`, etc.)
+
+### 5. Role-Based Redirects
+
+- **Action:** Implement logic to redirect users to their own dashboards if they try to access a page they are not authorized to view.
+- **File to modify:** `hooks/useRoleGuard.ts`
+
+### 6. Code Cleanup and Review
+
+- **Action:** Review all changes to ensure they meet the requirements and that no server-only code is exposed to the client.
+- **Action:** Run `npm run lint -- --fix` to ensure code quality.

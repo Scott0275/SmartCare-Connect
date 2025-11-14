@@ -1,109 +1,106 @@
-'use client';
-
-import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+"use client";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { auth } from "@/lib/firebase";
+import {
+  onAuthStateChanged,
+  User,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+
+interface UserProfile {
+  uid: string;
+  role: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  role: string | null;
+  userProfile: UserProfile | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
-  signup: (name: string, email: string, pass: string, role: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
       if (user) {
         setUser(user);
+        const db = getFirestore();
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-          setRole(userDoc.data().role);
+          const profile = userDoc.data() as UserProfile;
+          setUserProfile(profile);
+          // Redirect based on role
+          switch (profile.role) {
+            case "admin":
+              router.push("/admin/dashboard");
+              break;
+            case "doctor":
+              router.push("/doctor/dashboard");
+              break;
+            case "nurse":
+              router.push("/nurse/dashboard");
+              break;
+            case "receptionist":
+              router.push("/reception/dashboard");
+              break;
+            case "accountant":
+              router.push("/account/dashboard");
+              break;
+            case "pharmacy":
+              router.push("/pharmacy/dashboard");
+              break;
+            case "lab":
+              router.push("/lab/dashboard");
+              break;
+            default:
+              router.push("/login"); // Or a default page
+          }
         } else {
-          setRole(null);
+          // Handle case where user exists in Auth but not in Firestore
+          setUserProfile(null);
+          router.push("/login");
         }
       } else {
         setUser(null);
-        setRole(null);
+        setUserProfile(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
-  const redirectUser = (userRole: string | null) => {
-    if (!userRole) {
-      router.push("/unauthorized");
-      return;
-    }
-    switch (userRole) {
-      case "admin":
-        router.push("/admin/dashboard");
-        break;
-      case "doctor":
-        router.push("/doctor/dashboard");
-        break;
-      case "nurse":
-        router.push("/nurse/dashboard");
-        break;
-      case "patient":
-        router.push("/patient/dashboard");
-        break;
-      default:
-        router.push("/login");
-    }
-  };
-
-  const login = async (email: string, pass: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const loggedInUser = userCredential.user;
-    if (loggedInUser) {
-      const userDoc = await getDoc(doc(db, "users", loggedInUser.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        setRole(userData.role);
-        redirectUser(userData.role);
-      } else {
-        setRole(null);
-        await auth.signOut();
-        router.push("/login?error=user_data_not_found");
-      }
-    }
-  };
-
-  const signup = async (name: string, email: string, pass: string, role: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    const user = userCredential.user;
-    await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        role: role,
-    });
-    setRole(role);
-    redirectUser(role);
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = async () => {
-    await auth.signOut();
+    await signOut(auth);
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{ user, userProfile, loading, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -112,7 +109,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthContextProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

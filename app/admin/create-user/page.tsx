@@ -1,61 +1,113 @@
-
-"use client";
-import { useState } from "react";
+'use client'
+import { useState } from 'react'
 
 export default function CreateUserPage() {
-  const [formData, setFormData] = useState({ fullName: "", email: "", role: "" });
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState('patient')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const res = await fetch("/api/createUser", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setMessage('')
+    setError('')
 
-    const data = await res.json();
-    if (res.ok) {
-      setMessage(`✅ User created. Temp password: ${data.tempPassword}`);
-    } else {
-      setMessage(`❌ ${data.error}`);
+    try {
+      const res = await fetch('/api/createUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, role }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage('User created successfully!')
+        setEmail('')
+        setPassword('')
+        setRole('patient')
+      } else {
+        setError(data.error || 'Something went wrong')
+      }
+    } catch (err) {
+      setError('Something went wrong')
     }
-  };
+  }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-xl font-semibold mb-4">Create New User</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          type="text"
-          placeholder="Full Name"
-          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-          required
-          className="border p-2 rounded"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-          className="border p-2 rounded"
-        />
-        <select
-          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          required
-          className="border p-2 rounded"
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">Create New User</h1>
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md bg-white p-6 rounded-lg shadow-md"
+      >
+        {message && <p className="text-green-500 mb-4">{message}</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <div className="mb-4">
+          <label
+            htmlFor="email"
+            className="block text-gray-700 font-medium mb-2"
+          >
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div className="mb-4">
+          <label
+            htmlFor="password"
+            className="block text-gray-700 font-medium mb-2"
+          >
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div className="mb-4">
+          <label
+            htmlFor="role"
+            className="block text-gray-700 font-medium mb-2"
+          >
+            Role
+          </label>
+          <select
+            id="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="nurse">Nurse</option>
+            <option value="receptionist">Receptionist</option>
+            <option value="accountant">Accountant</option>
+            <option value="pharmacy">Pharmacy</option>
+            <option value="lab">Lab</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          <option value="">Select Role</option>
-          <option value="doctor">Doctor</option>
-          <option value="nurse">Nurse</option>
-          <option value="patient">Patient</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button className="bg-blue-600 text-white p-2 rounded" type="submit">
           Create User
         </button>
       </form>
-      {message && <p className="mt-3 text-sm">{message}</p>}
     </div>
-  );
+  )
 }

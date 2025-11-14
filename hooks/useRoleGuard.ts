@@ -1,29 +1,51 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
+"use client";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const useRoleGuard = (allowedRoles: string[]) => {
-  const { user, role, loading } = useAuth();
+  const { userProfile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) {
-      return; 
-    }
-
-    if (!user) {
-      router.push('/login'); 
       return;
     }
 
-    if (!role || !allowedRoles.includes(role)) {
-      router.push('/unauthorized');
+    if (!userProfile) {
+      router.push("/login");
+      return;
     }
-  }, [user, role, loading, router, allowedRoles]);
 
-  const isAuthorized = !loading && user && role && allowedRoles.includes(role);
-  
-  return { loading: loading || !isAuthorized, isAuthorized };
+    if (!allowedRoles.includes(userProfile.role)) {
+      // Redirect to their own dashboard
+      switch (userProfile.role) {
+        case "admin":
+          router.push("/admin/dashboard");
+          break;
+        case "doctor":
+          router.push("/doctor/dashboard");
+          break;
+        case "nurse":
+          router.push("/nurse/dashboard");
+          break;
+        case "receptionist":
+          router.push("/reception/dashboard");
+          break;
+        case "accountant":
+          router.push("/account/dashboard");
+          break;
+        case "pharmacy":
+          router.push("/pharmacy/dashboard");
+          break;
+        case "lab":
+          router.push("/lab/dashboard");
+          break;
+        default:
+          router.push("/login");
+      }
+    }
+  }, [userProfile, loading, router, allowedRoles]);
 };
 
 export default useRoleGuard;
