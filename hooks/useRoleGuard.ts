@@ -4,24 +4,22 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const useRoleGuard = (allowedRoles: string[]) => {
-  const { userProfile, loading } = useAuth();
+  const { role, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
+    if (loading) return;
 
-    if (!userProfile) {
+    if (!role) {
       router.push("/login");
       return;
     }
 
-    if (!allowedRoles.includes(userProfile.role)) {
+    if (!allowedRoles.includes(role)) {
       // Redirect to their own dashboard
-      switch (userProfile.role) {
+      switch (role) {
         case "admin":
-          router.push("/admin/dashboard");
+          router.push("/admin");
           break;
         case "doctor":
           router.push("/doctor/dashboard");
@@ -29,23 +27,16 @@ const useRoleGuard = (allowedRoles: string[]) => {
         case "nurse":
           router.push("/nurse/dashboard");
           break;
-        case "receptionist":
-          router.push("/reception/dashboard");
-          break;
-        case "accountant":
-          router.push("/account/dashboard");
-          break;
-        case "pharmacy":
-          router.push("/pharmacy/dashboard");
-          break;
-        case "lab":
-          router.push("/lab/dashboard");
+        case "patient":
+          router.push("/patient/dashboard");
           break;
         default:
-          router.push("/login");
+          router.push("/unauthorized");
       }
     }
-  }, [userProfile, loading, router, allowedRoles]);
+  }, [role, loading, router, allowedRoles]);
+
+  return { loading };
 };
 
 export default useRoleGuard;

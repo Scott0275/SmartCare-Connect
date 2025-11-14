@@ -7,6 +7,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string>("patient");
   const { login, user } = useAuth();
   const router = useRouter();
 
@@ -27,6 +28,22 @@ const Login = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <p className="text-red-500">{error}</p>}
+      <div>
+        <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+          Role (for selection only)
+        </label>
+        <select
+          id="role"
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
+          className="w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+          <option value="nurse">Nurse</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
       <div>
         <label
           htmlFor="email"
@@ -62,7 +79,7 @@ const Login = () => {
       <button
         type="submit"
         className="w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded-md shadow-sm"
-      _      >
+      >
         Login
       </button>
     </form>

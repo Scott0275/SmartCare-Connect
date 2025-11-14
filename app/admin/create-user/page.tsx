@@ -1,12 +1,17 @@
-'use client'
+"use client"
 import { useState } from 'react'
+import useRoleGuard from '@/hooks/useRoleGuard'
+import DashboardLayout from '@/components/DashboardLayout'
+import { useAuth } from '@/context/AuthContext'
 
 export default function CreateUserPage() {
+  const { loading } = useRoleGuard(['admin'])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('patient')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const { user } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -14,11 +19,18 @@ export default function CreateUserPage() {
     setError('')
 
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (user) {
+        const idToken = await user.getIdToken();
+        headers['Authorization'] = `Bearer ${idToken}`;
+      }
+
       const res = await fetch('/api/createUser', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ email, password, role }),
       })
 
@@ -37,13 +49,16 @@ export default function CreateUserPage() {
     }
   }
 
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">Create New User</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-md bg-white p-6 rounded-lg shadow-md"
-      >
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-4">Create New User</h1>
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-md bg-white p-6 rounded-lg shadow-md"
+        >
         {message && <p className="text-green-500 mb-4">{message}</p>}
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <div className="mb-4">

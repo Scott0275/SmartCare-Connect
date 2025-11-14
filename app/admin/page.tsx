@@ -1,22 +1,11 @@
 'use client';
 
-import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import useRoleGuard from '@/hooks/useRoleGuard';
 
 const AdminDashboard = () => {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
+  const { loading } = useRoleGuard(['admin']);
 
-  useEffect(() => {
-    if (!loading && (!user || role !== 'admin')) {
-      router.push("/unauthorized");
-    }
-  }, [user, role, loading, router]);
-
-  if (loading || !user || role !== 'admin') {
-    return <div>Loading...</div>; // Or a proper loading component
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex items-center justify-center min-h-screen">

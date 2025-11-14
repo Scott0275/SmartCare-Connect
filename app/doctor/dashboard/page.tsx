@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import useRoleGuard from '@/hooks/useRoleGuard';
 import { db } from '../../../lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
@@ -22,7 +22,8 @@ interface MedicalRecord {
 }
 
 export default function DoctorDashboard() {
-  const { user, role } = useAuth();
+  const { loading } = useRoleGuard(['doctor']);
+  const [userRoleChecked] = [true];
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
 
@@ -48,6 +49,8 @@ export default function DoctorDashboard() {
       unsubscribeMedicalRecords();
     };
   }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">

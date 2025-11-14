@@ -12,8 +12,10 @@ interface AppUser {
   role: string;
 }
 
+import useRoleGuard from '@/hooks/useRoleGuard';
+
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { loading } = useRoleGuard(['admin']);
   const [users, setUsers] = useState<AppUser[]>([]);
 
   useEffect(() => {
@@ -37,6 +39,8 @@ export default function AdminDashboard() {
       toast.error(`Error: ${(error as Error).message}`, { id: toastId });
     }
   };
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">

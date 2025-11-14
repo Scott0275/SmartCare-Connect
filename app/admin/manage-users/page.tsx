@@ -14,9 +14,9 @@ const mockUsers = [
 ];
 
 const ManageUsersPage = () => {
-    const { isAuthorized, loading } = useRoleGuard(['admin']);
+    const { loading } = useRoleGuard(['admin']);
 
-    if (loading || !isAuthorized) {
+    if (loading) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
 
@@ -24,10 +24,10 @@ const ManageUsersPage = () => {
         <DashboardLayout>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
-                <button className="bg-teal-500 text-white py-2 px-4 rounded-lg flex items-center hover:bg-teal-600 transition-colors">
+                <a href="/admin/create-user" className="bg-teal-500 text-white py-2 px-4 rounded-lg flex items-center hover:bg-teal-600 transition-colors">
                     <FiUserPlus className="mr-2" />
                     Add New User
-                </button>
+                </a>
             </div>
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden">

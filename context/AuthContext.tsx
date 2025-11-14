@@ -1,115 +1,120 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import { auth } from "@/lib/firebase";
+
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
-  User,
+  signOut as firebaseSignOut,
   signInWithEmailAndPassword,
-  signOut,
+  User,
 } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { auth } from "../firebase/firebaseClient";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebaseClient";
 import { useRouter } from "next/navigation";
-
-interface UserProfile {
-  uid: string;
-  role: string;
-}
 
 interface AuthContextType {
   user: User | null;
-  userProfile: UserProfile | null;
+  role: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  role: null,
+  loading: true,
+  logout: async () => {},
+  login: async () => {},
+});
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        const db = getFirestore();
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const profile = userDoc.data() as UserProfile;
-          setUserProfile(profile);
-          // Redirect based on role
-          switch (profile.role) {
-            case "admin":
-              router.push("/admin/dashboard");
-              break;
-            case "doctor":
-              router.push("/doctor/dashboard");
-              break;
-            case "nurse":
-              router.push("/nurse/dashboard");
-              break;
-            case "receptionist":
-              router.push("/reception/dashboard");
-              break;
-            case "accountant":
-              router.push("/account/dashboard");
-              break;
-            case "pharmacy":
-              router.push("/pharmacy/dashboard");
-              break;
-            case "lab":
-              router.push("/lab/dashboard");
-              break;
-            default:
-              router.push("/login"); // Or a default page
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+
+      if (currentUser) {
+        try {
+          const roleRef = doc(db, "users", currentUser.uid);
+          const roleSnap = await getDoc(roleRef);
+          if (roleSnap.exists()) {
+            const data = roleSnap.data();
+            setRole((data as any).role || null);
+          } else {
+            setRole(null);
           }
-        } else {
-          // Handle case where user exists in Auth but not in Firestore
-          setUserProfile(null);
-          router.push("/login");
+        } catch (err) {
+          console.error("Error fetching user role:", err);
+          setRole(null);
         }
       } else {
-        setUser(null);
-        setUserProfile(null);
+        setRole(null);
       }
+
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    await signInWithEmailAndPassword(auth, email, password);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const currentUser = cred.user;
+      setUser(currentUser);
+
+      // fetch role from firestore
+      const roleRef = doc(db, "users", currentUser.uid);
+      const roleSnap = await getDoc(roleRef);
+      const fetchedRole = roleSnap.exists() ? (roleSnap.data() as any).role : null;
+      setRole(fetchedRole || null);
+
+      // Redirect based on role
+      switch (fetchedRole) {
+        case "admin":
+          router.push("/admin");
+          break;
+        case "nurse":
+          router.push("/nurse/dashboard");
+          break;
+        case "doctor":
+          router.push("/doctor/dashboard");
+          break;
+        case "patient":
+          router.push("/patient/dashboard");
+          break;
+        default:
+          router.push("/");
+      }
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
-    await signOut(auth);
+    await firebaseSignOut(auth);
+    setUser(null);
+    setRole(null);
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, userProfile, loading, login, logout }}
-    >
+    <AuthContext.Provider value={{ user, role, loading, logout, login }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+// Keep backwards-compatible export name expected across the app
+export const AuthProvider = AuthContextProvider;
+
+export const useAuth = () => useContext(AuthContext);

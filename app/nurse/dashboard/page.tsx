@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import useRoleGuard from '@/hooks/useRoleGuard';
 import { db } from '../../../lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
@@ -14,7 +14,7 @@ interface Appointment {
 }
 
 export default function NurseDashboard() {
-  const { user, role } = useAuth();
+  const { loading } = useRoleGuard(['nurse']);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
@@ -27,6 +27,8 @@ export default function NurseDashboard() {
     });
     return () => unsubscribe();
   }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">

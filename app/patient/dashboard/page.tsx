@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import useRoleGuard from '@/hooks/useRoleGuard';
 import { db, storage } from '../../../lib/firebase';
 import { collection, addDoc, query, where, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -25,6 +26,7 @@ interface MedicalRecord {
 
 export default function PatientDashboard() {
   const { user } = useAuth();
+  const { loading } = useRoleGuard(['patient']);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [reason, setReason] = useState('');
@@ -60,6 +62,8 @@ export default function PatientDashboard() {
       };
     }
   }, [user]);
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
   const handleBookAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
