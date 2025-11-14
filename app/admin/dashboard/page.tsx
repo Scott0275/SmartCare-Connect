@@ -1,3 +1,12 @@
+import React from "react";
+
+export default function AdminDashboardPage() {
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold">Welcome, admin!</h1>
+    </div>
+  );
+}
 'use client';
 
 import { useState, useEffect } from 'react';

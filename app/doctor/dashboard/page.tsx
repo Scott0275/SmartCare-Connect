@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import useRoleGuard from '@/hooks/useRoleGuard';
-import { db } from '../../../lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
 interface Appointment {
@@ -21,9 +21,8 @@ interface MedicalRecord {
   patientId: string;
 }
 
-export default function DoctorDashboard() {
+export default function DoctorDashboardPage() {
   const { loading } = useRoleGuard(['doctor']);
-  const [userRoleChecked] = [true];
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
 
@@ -31,7 +30,7 @@ export default function DoctorDashboard() {
     const unsubscribeAppointments = onSnapshot(collection(db, 'appointments'), (querySnapshot) => {
       const newAppointments: Appointment[] = [];
       querySnapshot.forEach((doc) => {
-        newAppointments.push({ id: doc.id, ...doc.data() } as Appointment);
+        newAppointments.push({ id: doc.id, ...(doc.data() as any) } as Appointment);
       });
       setAppointments(newAppointments);
     });
@@ -39,7 +38,7 @@ export default function DoctorDashboard() {
     const unsubscribeMedicalRecords = onSnapshot(collection(db, 'medical_records'), (querySnapshot) => {
       const newMedicalRecords: MedicalRecord[] = [];
       querySnapshot.forEach((doc) => {
-        newMedicalRecords.push({ id: doc.id, ...doc.data() } as MedicalRecord);
+        newMedicalRecords.push({ id: doc.id, ...(doc.data() as any) } as MedicalRecord);
       });
       setMedicalRecords(newMedicalRecords);
     });

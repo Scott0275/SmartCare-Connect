@@ -122,7 +122,8 @@ export default function CreateUserPage() {
         >
           Create User
         </button>
-      </form>
-    </div>
+        </form>
+      </div>
+    </DashboardLayout>
   )
 }

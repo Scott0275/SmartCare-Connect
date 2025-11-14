@@ -1,3 +1,12 @@
+import React from "react";
+
+export default function PatientDashboardPage() {
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold">Welcome, patient!</h1>
+    </div>
+  );
+}
 "use client";
 
 import { useState, useEffect } from 'react';

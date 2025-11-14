@@ -1,59 +1,47 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to make rules more readable
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function hasRole(role) {
-      return isSignedIn() && request.auth.token.role == role;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // Rules for the 'users' collection
+    // Allow users to read their own user doc
     match /users/{userId} {
-      // Admins can read and write to any user document
-      allow read, write: if hasRole('admin');
-      // Users can read their own document
-      allow read: if isOwner(userId);
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // keep user write restricted (set from server)
     }
 
-    // Rules for the 'patients' collection
+    // Patients collection
     match /patients/{patientId} {
-      // Doctors and nurses can read any patient data
-      allow read: if hasRole('doctor') || hasRole('nurse');
-      // Patients can only read their own data
-      allow read: if isOwner(patientId);
-      // Nurses can create new patients
-      allow create: if hasRole('nurse');
-      // Doctors and nurses can update patient data
-      allow update: if hasRole('doctor') || hasRole('nurse');
+      allow read: if request.auth != null && (
+        // nurses, doctors, admins can read
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin']
+      );
+
+      // Only nurses (and admin) may create patients
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','admin'];
+
+      // Allow updates/deletes only by admin
+      allow update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Rules for 'prescriptions'
-    match /prescriptions/{prescriptionId} {
-        // Doctors can create prescriptions
-        allow create: if hasRole('doctor');
-        // Doctors and nurses can read any prescription
-        allow read: if hasRole('doctor') || hasRole('nurse');
-        // Patients can read their own prescriptions (assuming a field 'patientId' in the document)
-        allow read: if isOwner(resource.data.patientId);
+    // Visits collection
+    match /visits/{visitId} {
+      // nurses, doctors, admins can read
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin'];
+
+      // nurses and doctors can create visits
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin'];
+
+      // updates/deletes maybe restricted to admin only
+      allow update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Rules for 'vitals'
-    match /vitals/{vitalId} {
-        // Nurses can create new vitals
-        allow create: if hasRole('nurse');
-        // Doctors and nurses can read any vitals
-        allow read: if hasRole('doctor') || hasRole('nurse');
-        // Patients can read their own vitals (assuming a field 'patientId' in the document)
-        allow read: if isOwner(resource.data.patientId);
+    // Optional: restrict other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import useRoleGuard from '@/hooks/useRoleGuard';
-import { db } from '../../../lib/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import useRoleGuard from "@/hooks/useRoleGuard";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 interface Appointment {
   id: string;
@@ -13,15 +13,15 @@ interface Appointment {
   patientId: string;
 }
 
-export default function NurseDashboard() {
-  const { loading } = useRoleGuard(['nurse']);
+export default function NurseDashboardPage() {
+  const { loading } = useRoleGuard(["nurse"]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'appointments'), (querySnapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "appointments"), (querySnapshot) => {
       const newAppointments: Appointment[] = [];
       querySnapshot.forEach((doc) => {
-        newAppointments.push({ id: doc.id, ...doc.data() } as Appointment);
+        newAppointments.push({ id: doc.id, ...(doc.data() as any) } as Appointment);
       });
       setAppointments(newAppointments);
     });
