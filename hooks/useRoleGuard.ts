@@ -19,7 +19,7 @@ const useRoleGuard = (allowedRoles: string[]) => {
       // Redirect to their own dashboard
       switch (role) {
         case "admin":
-          router.push("/admin");
+          router.push("/admin/dashboard");
           break;
         case "doctor":
           router.push("/doctor/dashboard");
@@ -36,7 +36,9 @@ const useRoleGuard = (allowedRoles: string[]) => {
     }
   }, [role, loading, router, allowedRoles]);
 
-  return { loading };
+  const isAuthorized = role ? allowedRoles.includes(role) : false;
+
+  return { loading, isAuthorized };
 };
 
 export default useRoleGuard;

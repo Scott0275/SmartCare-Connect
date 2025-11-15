@@ -1,12 +1,3 @@
-import React from "react";
-
-export default function PatientDashboardPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold">Welcome, patient!</h1>
-    </div>
-  );
-}
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -16,6 +7,7 @@ import { db, storage } from '../../../lib/firebase';
 import { collection, addDoc, query, where, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { toast } from 'react-hot-toast';
+import React from "react";
 
 interface Appointment {
   id: string;

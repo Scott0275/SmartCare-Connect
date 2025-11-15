@@ -28,8 +28,11 @@ export default function DoctorBillingPage() {
     setShowModal(true);
   };
 
-  const handleAdd = async (item: any) => {
-    if (!selectedBill) return toast.error("Select a bill");
+  const handleAdd = async (item: any): Promise<void> => {
+    if (!selectedBill) {
+      toast.error("Select a bill");
+      return;
+    }
     try {
       await addItemToBill(selectedBill.id, item);
       toast.success("Item added to bill");

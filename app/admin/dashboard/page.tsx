@@ -1,27 +1,17 @@
-import React from "react";
-
-export default function AdminDashboardPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold">Welcome, admin!</h1>
-    </div>
-  );
-}
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { db } from '../../../lib/firebase';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
+import useRoleGuard from '@/hooks/useRoleGuard';
 
 interface AppUser {
   id: string;
   email: string;
   role: string;
 }
-
-import useRoleGuard from '@/hooks/useRoleGuard';
 
 export default function AdminDashboard() {
   const { loading } = useRoleGuard(['admin']);
