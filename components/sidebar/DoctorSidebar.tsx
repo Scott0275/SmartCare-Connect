@@ -8,10 +8,11 @@ export function DoctorSidebar() {
       <div className="px-6 py-4 font-bold text-xl">Doctor</div>
       <nav className="flex-1 px-4 space-y-1 pb-6">
         <Link href="/doctor/dashboard" className="block px-3 py-2 rounded hover:bg-gray-100">Dashboard</Link>
-        <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Appointments</Link>
-        <Link href="/doctor/patients" className="block px-3 py-2 rounded hover:bg-gray-100">Patients</Link>
-        <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Messages</Link>
-        <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Settings</Link>
+        <Link href="/doctor/patients/search" className="block px-3 py-2 rounded hover:bg-gray-100">Search Patients</Link>
+        <Link href="/doctor/consultations/start" className="block px-3 py-2 rounded hover:bg-gray-100">Start Consultation</Link>
+        <Link href="/doctor/scan" className="block px-3 py-2 rounded hover:bg-gray-100">Scan QR Code</Link>
+        <Link href="/doctor/prescriptions" className="block px-3 py-2 rounded hover:bg-gray-100">Prescriptions</Link>
+        <Link href="/sync-status" className="block px-3 py-2 rounded hover:bg-gray-100">Sync Status</Link>
       </nav>
     </aside>
   );

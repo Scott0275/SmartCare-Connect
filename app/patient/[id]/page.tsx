@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { useParams } from "next/navigation";
 import { getPatientById } from "@/services/patients";
 import { getVisitsByPatient } from "@/services/visits";
+import { getBillsForPatient, markBillAsPaid } from "@/lib/billingService";
+import { getPrescriptionsForPatient } from "@/lib/prescriptionService";
 import useRoleGuard from "@/hooks/useRoleGuard";
 import { useAuth } from "@/context/AuthContext";
 import VisitForm from "@/components/VisitForm";
@@ -15,8 +17,11 @@ export default function PatientProfilePage() {
 
   const [patient, setPatient] = useState<any>(null);
   const [visits, setVisits] = useState<any[]>([]);
+  const [bills, setBills] = useState<any[]>([]);
+  const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [indexUrl, setIndexUrl] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('visits');
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +31,10 @@ export default function PatientProfilePage() {
       try {
         const vs = await getVisitsByPatient(id as string);
         setVisits(vs);
+        const bs = await getBillsForPatient(id as string);
+        setBills(bs);
+        const ps = await getPrescriptionsForPatient(id as string);
+        setPrescriptions(ps);
       } catch (err: any) {
         console.error("Error loading visits:", err);
         const msg = err?.message || String(err);
@@ -53,13 +62,16 @@ export default function PatientProfilePage() {
             <a href={`/nurse/billing/${id}`} className="bg-emerald-600 text-white px-3 py-1 rounded">Create New Bill</a>
           )}
           {role === "doctor" && (
-            <a href={`/doctor/billing/${id}`} className="bg-indigo-600 text-white px-3 py-1 rounded">Add Item to Bill</a>
+            <>
+              <a href={`/doctor/billing/${id}`} className="bg-indigo-600 text-white px-3 py-1 rounded">Add Item to Bill</a>
+              <a href={`/doctor/prescriptions/new/${id}`} className="bg-purple-600 text-white px-3 py-1 rounded">Create Prescription</a>
+            </>
           )}
           {role === "admin" && (
-            <a href={`/admin/billing/${id}`} className="bg-gray-700 text-white px-3 py-1 rounded">Manage Bills</a>
+            <button onClick={() => setActiveTab('billing')} className="bg-gray-700 text-white px-3 py-1 rounded">Manage Bills</button>
           )}
           {role === "patient" && (
-            <a href="#" className="bg-gray-300 text-black px-3 py-1 rounded">View Bills</a>
+            <button onClick={() => setActiveTab('billing')} className="bg-gray-300 text-black px-3 py-1 rounded">View Bills</button>
           )}
         </div>
       </div>
@@ -125,16 +137,162 @@ export default function PatientProfilePage() {
         </div>
       )}
 
-      <div className="space-y-4">
-        {visits.map((v) => (
-          <div key={v.id} className="bg-white p-4 rounded shadow">
-            <div className="text-sm text-gray-500">{new Date(v.createdAt?.toDate ? v.createdAt.toDate() : v.createdAt).toLocaleString()}</div>
-            {v.symptoms && <p><strong>Symptoms:</strong> {v.symptoms}</p>}
-            {v.diagnosis && <p><strong>Diagnosis:</strong> {v.diagnosis}</p>}
-            {v.notes && <p><strong>Notes:</strong> {v.notes}</p>}
-          </div>
-        ))}
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('visits')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'visits'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Visits
+          </button>
+          <button
+            onClick={() => setActiveTab('billing')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'billing'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Billing
+          </button>
+          <button
+            onClick={() => setActiveTab('prescriptions')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'prescriptions'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Prescriptions
+          </button>
+        </nav>
       </div>
+
+      {/* Visits Tab */}
+      {activeTab === 'visits' && (
+        <div className="space-y-4">
+          {visits.map((v) => (
+            <div key={v.id} className="bg-white p-4 rounded shadow">
+              <div className="text-sm text-gray-500">{new Date(v.createdAt?.toDate ? v.createdAt.toDate() : v.createdAt).toLocaleString()}</div>
+              {v.symptoms && <p><strong>Symptoms:</strong> {v.symptoms}</p>}
+              {v.diagnosis && <p><strong>Diagnosis:</strong> {v.diagnosis}</p>}
+              {v.notes && <p><strong>Notes:</strong> {v.notes}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Billing Tab */}
+      {activeTab === 'billing' && (
+        <div className="space-y-4">
+          {bills.map((bill) => (
+            <div key={bill.id} className="bg-white p-4 rounded shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="font-medium">Bill #{bill.id}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(bill.createdAt?.toDate ? bill.createdAt.toDate() : bill.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">${bill.totalAmount.toFixed(2)}</div>
+                  <div className={`text-sm px-2 py-1 rounded ${
+                    bill.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {bill.status}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <a
+                  href={`/patient/billing/${bill.id}`}
+                  className="text-indigo-600 hover:text-indigo-800 text-sm"
+                >
+                  View Details
+                </a>
+                {role === 'admin' && bill.status === 'unpaid' && (
+                  <button
+                    onClick={async () => {
+                      await markBillAsPaid(bill.id);
+                      const bs = await getBillsForPatient(id as string);
+                      setBills(bs);
+                      toast.success('Bill marked as paid');
+                    }}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Mark Paid
+                  </button>
+                )}
+                {role === 'admin' && (
+                  <a
+                    href={`/admin/billing/${bill.id}`}
+                    className="bg-gray-600 text-white px-3 py-1 rounded text-sm ml-2"
+                  >
+                    Manage
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+          {bills.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No bills found for this patient.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Prescriptions Tab */}
+      {activeTab === 'prescriptions' && (
+        <div className="space-y-4">
+          {prescriptions.map((prescription) => (
+            <div key={prescription.id} className="bg-white p-4 rounded shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="font-medium">Prescription #{prescription.id}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(prescription.createdAt?.toDate ? prescription.createdAt.toDate() : prescription.createdAt).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <strong>Diagnosis:</strong> {prescription.diagnosis}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">
+                    {prescription.medications?.length || 0} medication(s)
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <a
+                  href={`/${role}/prescriptions/${prescription.id}`}
+                  className="text-indigo-600 hover:text-indigo-800 text-sm"
+                >
+                  View Details
+                </a>
+                {role === 'admin' && (
+                  <a
+                    href={`/admin/prescriptions/edit/${prescription.id}`}
+                    className="bg-gray-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Edit
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+          {prescriptions.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No prescriptions found for this patient.
+            </div>
+          )}
+        </div>
+      )}
 
       {showModal && id && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40">

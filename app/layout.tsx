@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
+import NetworkStatus from "@/components/NetworkStatus";
 
 
 const inter = Inter({
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
+          <NetworkStatus />
           {children}
           <Toaster position="bottom-center" />
         </AuthProvider>

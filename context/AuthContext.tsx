@@ -11,6 +11,7 @@ import { auth } from "../firebase/firebaseClient";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseClient";
 import { useRouter } from "next/navigation";
+import useAutoSync from "@/hooks/useAutoSync";
 
 interface AuthContextType {
   user: User | null;
@@ -33,6 +34,8 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  
+  useAutoSync();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

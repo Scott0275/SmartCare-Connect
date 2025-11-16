@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import useRoleGuard from "@/hooks/useRoleGuard";
 import { useRouter, useParams } from "next/navigation";
 import AddBillingItemModal from "@/components/billing/AddBillingItemModal";
-import { createBill } from "@/lib/billingService";
+import { createBill } from "@/lib/offlineBillingService";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -27,7 +27,7 @@ export default function NurseBillingCreatePage() {
     if (items.length === 0) return toast.error("Add at least one item");
     try {
       await createBill(patientId, user.uid, items);
-      toast.success("Bill saved");
+      toast.success(navigator.onLine ? "Bill saved" : "Bill saved offline - will sync when online");
       router.push(`/patient/${patientId}`);
     } catch (err: any) {
       console.error(err);

@@ -8,6 +8,8 @@ export function AdminSidebar() {
       <div className="px-6 py-4 font-bold text-xl">Admin</div>
       <nav className="flex-1 px-4 space-y-1 pb-6">
         <Link href="/admin/dashboard" className="block px-3 py-2 rounded hover:bg-gray-100">Dashboard</Link>
+        <Link href="/admin/conflicts" className="block px-3 py-2 rounded hover:bg-gray-100">Conflicts</Link>
+        <Link href="/admin/audit" className="block px-3 py-2 rounded hover:bg-gray-100">Audit Logs</Link>
         <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Appointments</Link>
         <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Patients</Link>
         <Link href="#" className="block px-3 py-2 rounded hover:bg-gray-100">Messages</Link>
