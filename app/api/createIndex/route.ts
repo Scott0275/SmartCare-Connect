@@ -4,6 +4,10 @@ import { JWT } from 'google-auth-library';
 
 export async function POST(req: Request) {
   try {
+    if (!admin.apps.length) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     const authHeader = req.headers.get('authorization') || '';
     if (!authHeader.startsWith('Bearer ')) return NextResponse.json({ error: 'Missing auth' }, { status: 401 });
     const idToken = authHeader.replace('Bearer ', '');

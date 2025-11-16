@@ -1,9 +1,9 @@
 
 import admin from "firebase-admin";
 
-if (!admin.apps.length) {
+if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
   const serviceAccount = JSON.parse(
-    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64!, "base64").toString()
+    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString()
   );
 
   admin.initializeApp({
@@ -11,8 +11,8 @@ if (!admin.apps.length) {
   });
 }
 
-const auth = admin.auth();
-const db = admin.firestore();
+const auth = admin.apps.length > 0 ? admin.auth() : null;
+const db = admin.apps.length > 0 ? admin.firestore() : null;
 
 export { auth, db };
 export default admin;

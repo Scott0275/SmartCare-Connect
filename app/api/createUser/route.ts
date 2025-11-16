@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
+    if (!admin.apps.length) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     // Verify caller is authenticated and is an admin
     const authHeader = req.headers.get('authorization') || '';
     if (!authHeader.startsWith('Bearer ')) {

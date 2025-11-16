@@ -6,6 +6,10 @@ import { db } from '@/lib/firebase';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!auth || !db) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
