@@ -6,7 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:rules": "node scripts/test-firestore-rules.js",
+    "backup": "./scripts/backup_firestore.sh",
+    "rotate-keys": "./scripts/rotate_service_account.sh",
+    "load-test": "node scripts/load_test.js",
+    "security-scan": "npm audit --audit-level=high",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

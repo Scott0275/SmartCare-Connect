@@ -85,6 +85,10 @@ async function createConflict(action: any, serverData: any) {
     conflictCollection = 'conflicts/emr';
   } else if (['appointments', 'doctorAvailability'].includes(action.collection)) {
     conflictCollection = 'conflicts/appointments';
+  } else if (['triage'].includes(action.collection)) {
+    conflictCollection = 'conflicts/triage';
+  } else if (['analytics'].includes(action.collection)) {
+    conflictCollection = 'conflicts/analytics';
   }
     
   const conflictRef = doc(collection(db, conflictCollection));

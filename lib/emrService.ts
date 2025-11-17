@@ -60,7 +60,7 @@ export interface ChronicCondition {
 export interface TimelineEvent {
   id: string;
   patientId: string;
-  type: 'vital' | 'diagnosis' | 'encounter' | 'prescription' | 'lab' | 'imaging' | 'billing';
+  type: 'vital' | 'diagnosis' | 'encounter' | 'prescription' | 'lab' | 'imaging' | 'billing' | 'triage';
   title: string;
   description: string;
   timestamp: any;
@@ -166,7 +166,7 @@ export async function getPatientTimeline(patientId: string): Promise<TimelineEve
   
   try {
     // Get cached data for offline support
-    const [vitals, diagnoses, encounters, prescriptions, labRequests, dispensations, bills] = await Promise.all([
+    const [vitals, diagnoses, encounters, prescriptions, labRequests, dispensations, bills, triage] = await Promise.all([
       getCachedData('cachedVitals'),
       getCachedData('cachedDiagnoses'),
       getCachedData('cachedEncounters'),
@@ -174,6 +174,7 @@ export async function getPatientTimeline(patientId: string): Promise<TimelineEve
       getCachedData('cachedLabRequests'),
       getCachedData('cachedDispensations'),
       getCachedData('cachedBilling'),
+      getCachedData('cachedTriage'),
     ]);
 
     // Add vitals to timeline
@@ -271,6 +272,20 @@ export async function getPatientTimeline(patientId: string): Promise<TimelineEve
         timestamp: bill.createdAt,
         providerId: bill.createdBy,
         data: bill,
+      });
+    });
+
+    // Add triage to timeline
+    (triage as any[])?.filter(t => t.patientId === patientId).forEach(triageRecord => {
+      events.push({
+        id: triageRecord.id,
+        patientId,
+        type: 'triage',
+        title: `Triage Assessment - ${triageRecord.triageLevel}`,
+        description: triageRecord.complaint || 'Triage completed',
+        timestamp: triageRecord.createdAt,
+        providerId: triageRecord.nurseId,
+        data: triageRecord,
       });
     });
 

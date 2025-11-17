@@ -1,0 +1,55 @@
+{
+  "name": "SmartCare Connect",
+  "short_name": "SmartCare",
+  "description": "Comprehensive healthcare management system with offline capabilities",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["medical", "health", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Patient Search",
+      "short_name": "Search",
+      "description": "Search for patients",
+      "url": "/nurse/patients/search",
+      "icons": [{ "src": "/icon-search.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Triage Queue",
+      "short_name": "Triage",
+      "description": "View triage queue",
+      "url": "/triage",
+      "icons": [{ "src": "/icon-triage.png", "sizes": "96x96" }]
+    }
+  ]
+}

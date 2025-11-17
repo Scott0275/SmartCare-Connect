@@ -11,6 +11,7 @@ import EncounterForm from './components/EncounterForm';
 import VitalsHistory from './components/VitalsHistory';
 import AllergiesEditor from './components/AllergiesEditor';
 import ChronicConditionsEditor from './components/ChronicConditionsEditor';
+import TriageHistory from './components/TriageHistory';
 
 export default function PatientRecordsPage() {
   const { loading } = useRoleGuard(['doctor', 'nurse', 'pharmacy', 'labtech', 'admin']);
@@ -124,6 +125,7 @@ export default function PatientRecordsPage() {
               { id: 'diagnoses', label: 'Diagnoses', icon: '🩺' },
               { id: 'allergies', label: 'Allergies', icon: '⚠️' },
               { id: 'conditions', label: 'Chronic Conditions', icon: '📋' },
+              { id: 'triage', label: 'Triage', icon: '🏥' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -186,6 +188,10 @@ export default function PatientRecordsPage() {
               canEdit={canWrite}
               onUpdate={loadPatientData}
             />
+          )}
+          
+          {activeTab === 'triage' && (
+            <TriageHistory patientId={id} />
           )}
         </div>
       </div>

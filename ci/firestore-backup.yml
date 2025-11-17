@@ -1,0 +1,44 @@
+name: Firestore Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Daily at 3 AM UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+    
+    - name: Create Firestore backup
+      run: |
+        DATE=$(date +%Y%m%d-%H%M%S)
+        BUCKET_NAME="${{ secrets.BACKUP_BUCKET_NAME }}"
+        
+        gcloud firestore export gs://$BUCKET_NAME/firestore-backups/$DATE \
+          --project=${{ secrets.FIREBASE_PROJECT_ID }}
+        
+        echo "Backup created: gs://$BUCKET_NAME/firestore-backups/$DATE"
+    
+    - name: Cleanup old backups
+      run: |
+        BUCKET_NAME="${{ secrets.BACKUP_BUCKET_NAME }}"
+        
+        # Keep only last 30 days of backups
+        gsutil -m rm -r gs://$BUCKET_NAME/firestore-backups/$(date -d '30 days ago' +%Y%m%d)* || true
+    
+    - name: Notify on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: 'Firestore backup failed!'

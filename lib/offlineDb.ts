@@ -73,6 +73,18 @@ interface OfflineDB extends DBSchema {
     key: string;
     value: any;
   };
+  cachedTriage: {
+    key: string;
+    value: any;
+  };
+  analyticsSnapshots: {
+    key: string;
+    value: any;
+  };
+  analyticsQueries: {
+    key: string;
+    value: any;
+  };
 }
 
 let db: IDBPDatabase<OfflineDB>;
@@ -129,6 +141,15 @@ export async function initOfflineDB() {
       }
       if (!db.objectStoreNames.contains('cachedAvailability')) {
         db.createObjectStore('cachedAvailability', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedTriage')) {
+        db.createObjectStore('cachedTriage', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('analyticsSnapshots')) {
+        db.createObjectStore('analyticsSnapshots', { keyPath: 'timestamp' });
+      }
+      if (!db.objectStoreNames.contains('analyticsQueries')) {
+        db.createObjectStore('analyticsQueries', { keyPath: 'id' });
       }
     },
   });

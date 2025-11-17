@@ -1,45 +1,137 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Allow users to read their own user doc
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if false; // keep user write restricted (set from server)
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
     }
-
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isAdmin() {
+      return getUserRole() in ['admin', 'superadmin'];
+    }
+    
+    function isDoctor() {
+      return getUserRole() == 'doctor';
+    }
+    
+    function isNurse() {
+      return getUserRole() == 'nurse';
+    }
+    
+    function isPharmacy() {
+      return getUserRole() == 'pharmacy';
+    }
+    
+    function isLabTech() {
+      return getUserRole() == 'labtech';
+    }
+    
+    function isPatient() {
+      return getUserRole() == 'patient';
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(userId));
+      allow write: if isAdmin();
+    }
+    
     // Patients collection
     match /patients/{patientId} {
-      allow read: if request.auth != null && (
-        // nurses, doctors, admins can read
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin']
-      );
-
-      // Only nurses (and admin) may create patients
-      allow create: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','admin'];
-
-      // Allow updates/deletes only by admin
-      allow update, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || isLabTech() || isPharmacy() || (isPatient() && isOwner(patientId)));
+      allow create, update: if isAuthenticated() && (isAdmin() || isNurse());
+      allow delete: if isAdmin();
     }
-
-    // Visits collection
-    match /visits/{visitId} {
-      // nurses, doctors, admins can read
-      allow read: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin'];
-
-      // nurses and doctors can create visits
-      allow create: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['nurse','doctor','admin'];
-
-      // updates/deletes maybe restricted to admin only
-      allow update, delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    
+    // Billing collection
+    match /billing/{billId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create: if isAuthenticated() && isNurse();
+      allow update: if isAuthenticated() && isAdmin();
+      allow delete: if isAdmin();
     }
-
-    // Optional: restrict other collections
+    
+    // Prescriptions collection
+    match /prescriptions/{prescriptionId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || isPharmacy() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create, update: if isAuthenticated() && (isAdmin() || isDoctor());
+      allow delete: if isAdmin();
+    }
+    
+    // Lab requests collection
+    match /labRequests/{requestId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || isLabTech() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create, update: if isAuthenticated() && (isAdmin() || isDoctor() || isLabTech());
+      allow delete: if isAdmin();
+    }
+    
+    // Triage collection
+    match /triage/{triageId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse());
+      allow create, update: if isAuthenticated() && (isAdmin() || isNurse() || isDoctor());
+      allow delete: if isAdmin();
+    }
+    
+    // Encounters collection
+    match /encounters/{encounterId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create, update: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse());
+      allow delete: if isAdmin();
+    }
+    
+    // Appointments collection
+    match /appointments/{appointmentId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create, update: if isAuthenticated() && (isAdmin() || isNurse() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+    
+    // Consultations collection
+    match /consultations/{consultationId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse());
+      allow create, update: if isAuthenticated() && (isAdmin() || isDoctor());
+      allow delete: if isAdmin();
+    }
+    
+    // Dispensations collection
+    match /dispensations/{dispensationId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || isPharmacy());
+      allow create, update: if isAuthenticated() && (isAdmin() || isPharmacy());
+      allow delete: if isAdmin();
+    }
+    
+    // Inventory collection
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated() && (isAdmin() || isPharmacy());
+      allow create, update: if isAuthenticated() && (isAdmin() || isPharmacy());
+      allow delete: if isAdmin();
+    }
+    
+    // Conflicts collection (admin only)
+    match /conflicts/{conflictId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Audit logs (admin read-only)
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // System only
+    }
+    
+    // Analytics snapshots (admin only)
+    match /analyticsSnapshots/{snapshotId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny all other collections
     match /{document=**} {
       allow read, write: if false;
     }
