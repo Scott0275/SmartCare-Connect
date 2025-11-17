@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/firebaseAdmin';
 import { resolveConflict } from '@/lib/conflictService';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  // Lazy load Firebase to avoid build-time initialization
+  const { auth } = await import('@/lib/firebaseAdmin');
+  const { doc, getDoc } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
   try {
     if (!auth || !db) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });

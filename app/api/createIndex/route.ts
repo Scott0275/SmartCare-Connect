@@ -1,9 +1,11 @@
-import admin from '@/lib/firebaseAdmin';
 import { NextResponse } from 'next/server';
 import { JWT } from 'google-auth-library';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
+    const admin = (await import('@/lib/firebaseAdmin')).default;
     if (!admin.apps.length) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
     }
