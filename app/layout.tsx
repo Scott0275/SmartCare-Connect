@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import NetworkStatus from "@/components/NetworkStatus";
 
+export const dynamic = 'force-dynamic';
 
 const inter = Inter({
   subsets: ["latin"],
