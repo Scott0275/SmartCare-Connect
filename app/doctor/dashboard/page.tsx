@@ -4,7 +4,11 @@ import React, { useState, useEffect } from 'react';
 import useRoleGuard from '@/hooks/useRoleGuard';
 import { useAuth } from '@/context/AuthContext';
 import { getCachedData } from '@/lib/offlineDb';
+import { getLabRequests } from '@/lib/labTechService';
+import { getPrescriptions } from '@/lib/pharmacyService';
+import { getAppointments } from '@/lib/appointmentService';
 import SyncNowButton from '@/components/SyncNowButton';
+import SyncPendingButton from '@/components/SyncPendingButton';
 import Link from 'next/link';
 
 export default function DoctorDashboardPage() {
@@ -12,7 +16,10 @@ export default function DoctorDashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     todayAppointments: 0,
+    pendingAppointments: 0,
     pendingLabResults: 0,
+    completedLabResults: 0,
+    prescriptionsDispensed: 0,
     patientsAwaitingReview: 0,
     draftConsultations: 0,
   });
@@ -37,13 +44,25 @@ export default function DoctorDashboardPage() {
   const loadDashboardStats = async () => {
     try {
       const consultations = await getCachedData('cachedConsultations') as any[];
-      const labRequests = await getCachedData('cachedLabRequests') as any[];
+      const labRequests = await getLabRequests();
+      const prescriptions = await getPrescriptions();
+      
+      const appointments = await getAppointments({ doctorId: user?.uid });
+      const today = new Date().toDateString();
+      const todayAppointments = appointments?.filter((a: any) => {
+        if (!a.scheduledFor) return false;
+        const aptDate = a.scheduledFor?.toDate ? a.scheduledFor.toDate() : new Date(a.scheduledFor);
+        return aptDate.toDateString() === today;
+      }).length || 0;
       
       setStats({
-        todayAppointments: 5,
-        pendingLabResults: labRequests?.filter(l => l.status === 'pending').length || 0,
+        todayAppointments,
+        pendingAppointments: appointments?.filter((a: any) => a.status === 'pending').length || 0,
+        pendingLabResults: labRequests?.filter((l: any) => ['pending', 'accepted', 'in_progress'].includes(l.status)).length || 0,
+        completedLabResults: labRequests?.filter((l: any) => l.status === 'completed' && l.doctorId === user?.uid).length || 0,
+        prescriptionsDispensed: prescriptions?.filter((p: any) => p.status === 'dispensed' && p.doctorId === user?.uid).length || 0,
         patientsAwaitingReview: 3,
-        draftConsultations: consultations?.filter(c => c.status === 'draft').length || 0,
+        draftConsultations: consultations?.filter((c: any) => c.status === 'draft').length || 0,
       });
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
@@ -59,6 +78,7 @@ export default function DoctorDashboardPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-primary">Doctor Dashboard</h1>
             <div className="flex space-x-2">
+              <SyncPendingButton />
               <SyncNowButton />
               <a href="/sync-status" className="bg-gray-600 text-white px-3 py-1 rounded text-sm">Sync Status</a>
             </div>
@@ -108,6 +128,26 @@ export default function DoctorDashboardPage() {
           
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
+              <div className="text-3xl text-green-600 mr-4">✅</div>
+              <div>
+                <div className="text-2xl font-bold">{stats.completedLabResults}</div>
+                <div className="text-sm text-gray-600">New Lab Results</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="text-3xl text-purple-600 mr-4">💊</div>
+              <div>
+                <div className="text-2xl font-bold">{stats.prescriptionsDispensed}</div>
+                <div className="text-sm text-gray-600">Prescriptions Dispensed</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
               <div className="text-3xl text-red-600 mr-4">👥</div>
               <div>
                 <div className="text-2xl font-bold">{stats.patientsAwaitingReview}</div>
@@ -128,7 +168,7 @@ export default function DoctorDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Link href="/doctor/patients/search" className="bg-blue-600 text-white p-6 rounded-lg text-center hover:bg-blue-700">
             <div className="text-3xl mb-2">🔍</div>
             <div className="text-lg font-medium">Search Patients</div>
@@ -145,6 +185,12 @@ export default function DoctorDashboardPage() {
             <div className="text-3xl mb-2">🩺</div>
             <div className="text-lg font-medium">Start Consultation</div>
             <div className="text-sm opacity-90">Begin new patient consultation</div>
+          </Link>
+          
+          <Link href="/doctor/appointments" className="bg-orange-600 text-white p-6 rounded-lg text-center hover:bg-orange-700">
+            <div className="text-3xl mb-2">📅</div>
+            <div className="text-lg font-medium">My Appointments</div>
+            <div className="text-sm opacity-90">View and manage appointments</div>
           </Link>
         </div>
 

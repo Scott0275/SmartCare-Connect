@@ -15,32 +15,29 @@ export async function createBill(patientId: string, createdBy: string, items: an
     createdAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const result = await originalCreateBill(patientId, createdBy, items);
-      await cacheData('cachedBilling', result);
-      return result;
-    },
-    async () => {
-      await queueAction('billing', billId, billData, 'create');
-      await cacheData('cachedBilling', { id: billId, ...billData });
-      return { id: billId, ...billData };
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('billing', billId, billData, 'create');
+    await cacheData('cachedBilling', { id: billId, ...billData });
+    return { id: billId, ...billData };
+  } else {
+    // Online: perform Firestore write immediately
+    const result = await originalCreateBill(patientId, createdBy, items);
+    await cacheData('cachedBilling', result);
+    return result;
+  }
 }
 
 export async function addItemToBill(billId: string, item: any) {
-  return executeWithOfflineSupport(
-    async () => {
-      const result = await originalAddItemToBill(billId, item);
-      await cacheData('cachedBilling', { id: billId, ...result });
-      return result;
-    },
-    async () => {
-      await queueAction('billing', billId, { addItem: item }, 'update');
-      // Cache the item addition locally
-      const cachedBill = await cacheData('cachedBilling', { id: billId, addedItem: item });
-      return cachedBill;
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('billing', billId, { addItem: item }, 'update');
+    const cachedBill = await cacheData('cachedBilling', { id: billId, addedItem: item });
+    return cachedBill;
+  } else {
+    // Online: perform Firestore write immediately
+    const result = await originalAddItemToBill(billId, item);
+    await cacheData('cachedBilling', { id: billId, ...result });
+    return result;
+  }
 }

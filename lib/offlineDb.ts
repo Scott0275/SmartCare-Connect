@@ -10,6 +10,7 @@ interface OfflineDB extends DBSchema {
       docId: string;
       payload: any;
       timestamp: number;
+      offline?: boolean; // Flag to mark offline-only actions
     };
   };
   cachedPatients: {
@@ -33,6 +34,42 @@ interface OfflineDB extends DBSchema {
     value: any;
   };
   cachedLabRequests: {
+    key: string;
+    value: any;
+  };
+  cachedLabResults: {
+    key: string;
+    value: any;
+  };
+  cachedInventory: {
+    key: string;
+    value: any;
+  };
+  cachedDispensations: {
+    key: string;
+    value: any;
+  };
+  cachedDiagnoses: {
+    key: string;
+    value: any;
+  };
+  cachedEncounters: {
+    key: string;
+    value: any;
+  };
+  cachedAllergies: {
+    key: string;
+    value: any;
+  };
+  cachedChronicConditions: {
+    key: string;
+    value: any;
+  };
+  cachedAppointments: {
+    key: string;
+    value: any;
+  };
+  cachedAvailability: {
     key: string;
     value: any;
   };
@@ -66,6 +103,33 @@ export async function initOfflineDB() {
       if (!db.objectStoreNames.contains('cachedLabRequests')) {
         db.createObjectStore('cachedLabRequests', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('cachedLabResults')) {
+        db.createObjectStore('cachedLabResults', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedInventory')) {
+        db.createObjectStore('cachedInventory', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedDispensations')) {
+        db.createObjectStore('cachedDispensations', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedDiagnoses')) {
+        db.createObjectStore('cachedDiagnoses', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedEncounters')) {
+        db.createObjectStore('cachedEncounters', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedAllergies')) {
+        db.createObjectStore('cachedAllergies', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedChronicConditions')) {
+        db.createObjectStore('cachedChronicConditions', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedAppointments')) {
+        db.createObjectStore('cachedAppointments', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedAvailability')) {
+        db.createObjectStore('cachedAvailability', { keyPath: 'id' });
+      }
     },
   });
   
@@ -77,6 +141,7 @@ export async function addQueuedAction(action: {
   collection: string;
   docId: string;
   payload: any;
+  offline?: boolean;
 }) {
   const database = await initOfflineDB();
   const id = `${action.collection}_${action.docId}_${Date.now()}`;

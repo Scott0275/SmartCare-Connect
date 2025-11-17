@@ -13,18 +13,17 @@ export async function createPatientOffline(patientData: any) {
     updatedAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const result = await addPatient(patientData);
-      await cacheData('cachedPatients', result);
-      return result;
-    },
-    async () => {
-      await queueAction('patients', patientId, patient, 'create');
-      await cacheData('cachedPatients', patient);
-      return patient;
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('patients', patientId, patient, 'create');
+    await cacheData('cachedPatients', patient);
+    return patient;
+  } else {
+    // Online: perform Firestore write immediately
+    const result = await addPatient(patientData);
+    await cacheData('cachedPatients', result);
+    return result;
+  }
 }
 
 export async function searchPatientsOffline(query: string) {

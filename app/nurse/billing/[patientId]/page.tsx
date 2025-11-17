@@ -27,7 +27,7 @@ export default function NurseBillingCreatePage() {
     if (items.length === 0) return toast.error("Add at least one item");
     try {
       await createBill(patientId, user.uid, items);
-      toast.success(navigator.onLine ? "Bill saved" : "Bill saved offline - will sync when online");
+      toast.success(navigator.onLine ? "Bill saved successfully" : "Bill saved offline - will sync when online");
       router.push(`/patient/${patientId}`);
     } catch (err: any) {
       console.error(err);

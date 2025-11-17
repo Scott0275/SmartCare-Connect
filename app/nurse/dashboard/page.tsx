@@ -5,6 +5,7 @@ import useRoleGuard from "@/hooks/useRoleGuard";
 import { useAuth } from "@/context/AuthContext";
 import { getRecentPatients } from "@/lib/offlinePatientService";
 import SyncNowButton from "@/components/SyncNowButton";
+import SyncPendingButton from "@/components/SyncPendingButton";
 import Link from "next/link";
 
 export default function NurseDashboardPage() {
@@ -47,6 +48,7 @@ export default function NurseDashboardPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-primary">Nurse Dashboard</h1>
             <div className="flex space-x-2">
+              <SyncPendingButton />
               <SyncNowButton />
               <a href="/sync-status" className="bg-gray-600 text-white px-3 py-1 rounded text-sm">Sync Status</a>
             </div>

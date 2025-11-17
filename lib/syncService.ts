@@ -8,21 +8,28 @@ export async function queueAction(
   payload: any,
   type: 'create' | 'update' | 'delete'
 ) {
-  return await addQueuedAction({
-    type,
-    collection: collectionName,
-    docId,
-    payload,
-  });
+  // Only queue if offline
+  if (!navigator.onLine) {
+    return await addQueuedAction({
+      type,
+      collection: collectionName,
+      docId,
+      payload,
+      offline: true, // Mark as offline action
+    });
+  }
+  return null;
 }
 
 export async function syncPendingActions(): Promise<{ success: number; conflicts: number; errors: number }> {
   const actions = await getQueuedActions();
+  // Only process actions marked as offline
+  const offlineActions = actions.filter(action => action.offline === true);
   let success = 0;
   let conflicts = 0;
   let errors = 0;
 
-  for (const action of actions) {
+  for (const action of offlineActions) {
     try {
       const docRef = doc(db, action.collection, action.docId);
       
@@ -58,6 +65,7 @@ export async function syncPendingActions(): Promise<{ success: number; conflicts
         success++;
       }
       
+      // Remove immediately after successful sync
       await removeQueuedAction(action.id);
     } catch (error) {
       console.error('Sync error for action:', action, error);
@@ -69,7 +77,17 @@ export async function syncPendingActions(): Promise<{ success: number; conflicts
 }
 
 async function createConflict(action: any, serverData: any) {
-  const conflictRef = doc(collection(db, 'conflicts'));
+  let conflictCollection = 'conflicts';
+  
+  if (['inventory', 'prescriptions', 'dispensations'].includes(action.collection)) {
+    conflictCollection = 'conflicts/pharmacy';
+  } else if (['diagnoses', 'encounters', 'allergies', 'chronicConditions'].includes(action.collection)) {
+    conflictCollection = 'conflicts/emr';
+  } else if (['appointments', 'doctorAvailability'].includes(action.collection)) {
+    conflictCollection = 'conflicts/appointments';
+  }
+    
+  const conflictRef = doc(collection(db, conflictCollection));
   await setDoc(conflictRef, {
     collection: action.collection,
     docId: action.docId,
@@ -92,14 +110,11 @@ export async function executeWithOfflineSupport<T>(
   onlineAction: () => Promise<T>,
   offlineAction: () => Promise<T>
 ): Promise<T> {
-  if (await isOnline()) {
-    try {
-      return await onlineAction();
-    } catch (error) {
-      console.error('Online action failed, falling back to offline:', error);
-      return await offlineAction();
-    }
+  if (navigator.onLine) {
+    // When online, perform Firestore write immediately
+    return await onlineAction();
   } else {
+    // When offline, queue the action
     return await offlineAction();
   }
 }

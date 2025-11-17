@@ -16,42 +16,37 @@ export async function createConsultation(patientId: string, doctorId: string, co
     updatedAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const ref = await addDoc(collection(db, 'consultations'), consultation);
-      const result = { ...consultation, id: ref.id };
-      await cacheData('cachedConsultations', result);
-      return result;
-    },
-    async () => {
-      await queueAction('consultations', consultationId, consultation, 'create');
-      await cacheData('cachedConsultations', consultation);
-      return consultation;
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('consultations', consultationId, consultation, 'create');
+    await cacheData('cachedConsultations', consultation);
+    return consultation;
+  } else {
+    // Online: perform Firestore write immediately
+    const ref = await addDoc(collection(db, 'consultations'), consultation);
+    const result = { ...consultation, id: ref.id };
+    await cacheData('cachedConsultations', result);
+    return result;
+  }
 }
 
 export async function updateConsultation(consultationId: string, updates: any) {
   const updatedData = { ...updates, updatedAt: Timestamp.now() };
   
-  return executeWithOfflineSupport(
-    async () => {
-      const ref = doc(db, 'consultations', consultationId);
-      await updateDoc(ref, updatedData);
-      const snap = await getDoc(ref);
-      const result = { id: snap.id, ...snap.data() };
-      await cacheData('cachedConsultations', result);
-      return result;
-    },
-    async () => {
-      await queueAction('consultations', consultationId, updatedData, 'update');
-      // Update local cache
-      const cached = await getCachedData('cachedConsultations') as any[];
-      const updated = cached?.map(c => c.id === consultationId ? { ...c, ...updatedData } : c) || [];
-      await cacheData('cachedConsultations', { id: consultationId, ...updatedData });
-      return { id: consultationId, ...updatedData };
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('consultations', consultationId, updatedData, 'update');
+    await cacheData('cachedConsultations', { id: consultationId, ...updatedData });
+    return { id: consultationId, ...updatedData };
+  } else {
+    // Online: perform Firestore write immediately
+    const ref = doc(db, 'consultations', consultationId);
+    await updateDoc(ref, updatedData);
+    const snap = await getDoc(ref);
+    const result = { id: snap.id, ...snap.data() };
+    await cacheData('cachedConsultations', result);
+    return result;
+  }
 }
 
 export async function getConsultationsForPatient(patientId: string) {

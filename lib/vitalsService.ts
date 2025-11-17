@@ -14,19 +14,18 @@ export async function createVitals(patientId: string, vitalsData: any, nurseId: 
     createdAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const ref = await addDoc(collection(db, 'vitals'), vitals);
-      const result = { id: ref.id, ...vitals };
-      await cacheData('cachedVitals', result);
-      return result;
-    },
-    async () => {
-      await queueAction('vitals', vitalsId, vitals, 'create');
-      await cacheData('cachedVitals', vitals);
-      return vitals;
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('vitals', vitalsId, vitals, 'create');
+    await cacheData('cachedVitals', vitals);
+    return vitals;
+  } else {
+    // Online: perform Firestore write immediately
+    const ref = await addDoc(collection(db, 'vitals'), vitals);
+    const result = { id: ref.id, ...vitals };
+    await cacheData('cachedVitals', result);
+    return result;
+  }
 }
 
 export async function getVitalsForPatient(patientId: string) {

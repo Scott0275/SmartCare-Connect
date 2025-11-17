@@ -6,6 +6,8 @@ import { getPatientById } from "@/services/patients";
 import { getVisitsByPatient } from "@/services/visits";
 import { getBillsForPatient, markBillAsPaid } from "@/lib/billingService";
 import { getPrescriptionsForPatient } from "@/lib/prescriptionService";
+import { getLabRequestsForPatient } from "@/lib/labService";
+import { getCachedData } from "@/lib/offlineDb";
 import useRoleGuard from "@/hooks/useRoleGuard";
 import { useAuth } from "@/context/AuthContext";
 import VisitForm from "@/components/VisitForm";
@@ -19,6 +21,8 @@ export default function PatientProfilePage() {
   const [visits, setVisits] = useState<any[]>([]);
   const [bills, setBills] = useState<any[]>([]);
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [labRequests, setLabRequests] = useState<any[]>([]);
+  const [dispensations, setDispensations] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [indexUrl, setIndexUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('visits');
@@ -35,6 +39,11 @@ export default function PatientProfilePage() {
         setBills(bs);
         const ps = await getPrescriptionsForPatient(id as string);
         setPrescriptions(ps);
+        const ls = await getLabRequestsForPatient(id as string);
+        setLabRequests(ls);
+        const ds = await getCachedData('cachedDispensations') as any[];
+        const patientDispensations = ds?.filter(d => d.patientId === id) || [];
+        setDispensations(patientDispensations);
       } catch (err: any) {
         console.error("Error loading visits:", err);
         const msg = err?.message || String(err);
@@ -67,6 +76,7 @@ export default function PatientProfilePage() {
               <a href={`/doctor/prescriptions/new/${id}`} className="bg-purple-600 text-white px-3 py-1 rounded">Create Prescription</a>
             </>
           )}
+          <a href={`/patient/${id}/records`} className="bg-teal-600 text-white px-3 py-1 rounded">Medical Records</a>
           {role === "admin" && (
             <button onClick={() => setActiveTab('billing')} className="bg-gray-700 text-white px-3 py-1 rounded">Manage Bills</button>
           )}
@@ -170,6 +180,32 @@ export default function PatientProfilePage() {
           >
             Prescriptions
           </button>
+          <button
+            onClick={() => setActiveTab('labs')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'labs'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Labs & Imaging
+          </button>
+          <button
+            onClick={() => setActiveTab('medications')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'medications'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Medications
+          </button>
+          <a
+            href={`/patient/${id}/records`}
+            className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          >
+            📋 Full Medical Records
+          </a>
         </nav>
       </div>
 
@@ -289,6 +325,132 @@ export default function PatientProfilePage() {
           {prescriptions.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               No prescriptions found for this patient.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Labs & Imaging Tab */}
+      {activeTab === 'labs' && (
+        <div className="space-y-4">
+          {labRequests.map((request) => (
+            <div key={request.id} className="bg-white p-4 rounded shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="font-medium">Lab Request #{request.id}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(request.createdAt?.toDate ? request.createdAt.toDate() : request.createdAt).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <strong>Tests:</strong> {request.tests?.map((t: any) => t.name).join(', ')}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm px-2 py-1 rounded ${
+                    request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    request.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                    request.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {request.status?.replace('_', ' ').toUpperCase()}
+                  </div>
+                  {request.priority && (
+                    <div className={`text-xs px-1 py-0.5 rounded mt-1 ${
+                      request.priority === 'stat' ? 'bg-red-100 text-red-800' :
+                      request.priority === 'urgent' ? 'bg-orange-100 text-orange-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {request.priority.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {request.results && request.results.length > 0 && (
+                <div className="mt-3 p-3 bg-gray-50 rounded">
+                  <div className="text-sm font-medium mb-2">Results:</div>
+                  {request.results.map((result: any, idx: number) => (
+                    <div key={idx} className="text-sm mb-1">
+                      <span className="font-medium">{result.testName}:</span> {result.value} {result.unit}
+                      {result.flag && result.flag !== 'Normal' && (
+                        <span className={`ml-2 px-1 py-0.5 rounded text-xs ${
+                          result.flag === 'Critical' ? 'bg-red-100 text-red-800' :
+                          result.flag === 'High' ? 'bg-orange-100 text-orange-800' :
+                          result.flag === 'Low' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {result.flag}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-3">
+                <div className="text-sm text-gray-500">
+                  Priority: {request.priority || 'Normal'}
+                </div>
+                {request.attachments && request.attachments.length > 0 && (
+                  <div className="text-sm text-blue-600">
+                    📎 {request.attachments.length} attachment(s)
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {labRequests.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No lab requests found for this patient.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Medications Tab */}
+      {activeTab === 'medications' && (
+        <div className="space-y-4">
+          {dispensations.map((dispensation) => (
+            <div key={dispensation.id} className="bg-white p-4 rounded shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="font-medium">Dispensation #{dispensation.id}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(dispensation.dispensedAt?.toDate ? dispensation.dispensedAt.toDate() : dispensation.dispensedAt).toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                  Dispensed
+                </div>
+              </div>
+              
+              <div className="mt-3">
+                <div className="text-sm font-medium mb-2">Medications:</div>
+                {dispensation.medications?.map((med: any, idx: number) => (
+                  <div key={idx} className="text-sm mb-2 p-2 bg-gray-50 rounded">
+                    <div className="font-medium">{med.name}</div>
+                    <div className="text-gray-600">
+                      Dispensed: {med.quantityDispensed} / Prescribed: {med.quantityPrescribed}
+                    </div>
+                    {med.substitution && (
+                      <div className="text-blue-600">Substitution: {med.substitution}</div>
+                    )}
+                    {med.notes && (
+                      <div className="text-gray-600">Notes: {med.notes}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {dispensation.notes && (
+                <div className="mt-3 p-2 bg-blue-50 rounded">
+                  <div className="text-sm font-medium text-blue-800">Pharmacist Notes:</div>
+                  <div className="text-sm text-blue-700">{dispensation.notes}</div>
+                </div>
+              )}
+            </div>
+          ))}
+          {dispensations.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No medications dispensed for this patient.
             </div>
           )}
         </div>

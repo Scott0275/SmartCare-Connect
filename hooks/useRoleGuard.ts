@@ -30,6 +30,12 @@ const useRoleGuard = (allowedRoles: string[]) => {
         case "patient":
           router.push("/patient/dashboard");
           break;
+        case "labtech":
+          router.push("/labtech/dashboard");
+          break;
+        case "pharmacy":
+          router.push("/pharmacy/dashboard");
+          break;
         default:
           router.push("/unauthorized");
       }

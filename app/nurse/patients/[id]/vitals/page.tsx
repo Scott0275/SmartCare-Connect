@@ -61,7 +61,7 @@ export default function VitalsEntryPage() {
       
       toast.success(navigator.onLine ? 
         "Vitals recorded successfully" : 
-        "Vitals recorded offline - will sync when online"
+        "Vitals saved offline - will sync when online"
       );
       
       router.push(`/nurse/patients/${id}`);

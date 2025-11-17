@@ -7,6 +7,11 @@ export default function SyncNowButton() {
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
+    if (!navigator.onLine) {
+      toast.error('Cannot sync while offline');
+      return;
+    }
+
     setSyncing(true);
     try {
       const result = await syncPendingActions();
@@ -18,7 +23,7 @@ export default function SyncNowButton() {
       } else if (result.success > 0) {
         toast.success(`✔ Synced ${result.success} items successfully`);
       } else {
-        toast.success('✔ Already synced');
+        toast.success('✔ No offline actions to sync');
       }
     } catch (error) {
       console.error('Sync failed:', error);
@@ -31,7 +36,7 @@ export default function SyncNowButton() {
   return (
     <button
       onClick={handleSync}
-      disabled={syncing}
+      disabled={syncing || !navigator.onLine}
       className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
     >
       {syncing ? 'Syncing...' : 'Sync Now'}

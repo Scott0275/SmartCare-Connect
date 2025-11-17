@@ -45,7 +45,7 @@ export default function NewPrescriptionPage() {
 
     try {
       await createPrescription(patientId, user.uid, { diagnosis, medications });
-      toast.success(navigator.onLine ? "Prescription created" : "Prescription saved offline - will sync when online");
+      toast.success(navigator.onLine ? "Prescription created successfully" : "Prescription saved offline - will sync when online");
       router.push(`/patient/${patientId}`);
     } catch (err: any) {
       console.error(err);

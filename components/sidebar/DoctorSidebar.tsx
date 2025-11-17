@@ -10,6 +10,8 @@ export function DoctorSidebar() {
         <Link href="/doctor/dashboard" className="block px-3 py-2 rounded hover:bg-gray-100">Dashboard</Link>
         <Link href="/doctor/patients/search" className="block px-3 py-2 rounded hover:bg-gray-100">Search Patients</Link>
         <Link href="/doctor/consultations/start" className="block px-3 py-2 rounded hover:bg-gray-100">Start Consultation</Link>
+        <Link href="/doctor/appointments" className="block px-3 py-2 rounded hover:bg-gray-100">📅 My Appointments</Link>
+        <Link href="/doctor/records" className="block px-3 py-2 rounded hover:bg-gray-100">📋 Medical Records</Link>
         <Link href="/doctor/scan" className="block px-3 py-2 rounded hover:bg-gray-100">Scan QR Code</Link>
         <Link href="/doctor/prescriptions" className="block px-3 py-2 rounded hover:bg-gray-100">Prescriptions</Link>
         <Link href="/sync-status" className="block px-3 py-2 rounded hover:bg-gray-100">Sync Status</Link>

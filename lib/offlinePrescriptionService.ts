@@ -15,16 +15,15 @@ export async function createPrescription(patientId: string, doctorId: string, da
     updatedAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const result = await originalCreatePrescription(patientId, doctorId, data);
-      await cacheData('cachedPrescriptions', result);
-      return result;
-    },
-    async () => {
-      await queueAction('prescriptions', prescriptionId, prescriptionData, 'create');
-      await cacheData('cachedPrescriptions', { id: prescriptionId, ...prescriptionData });
-      return { id: prescriptionId, ...prescriptionData };
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('prescriptions', prescriptionId, prescriptionData, 'create');
+    await cacheData('cachedPrescriptions', { id: prescriptionId, ...prescriptionData });
+    return { id: prescriptionId, ...prescriptionData };
+  } else {
+    // Online: perform Firestore write immediately
+    const result = await originalCreatePrescription(patientId, doctorId, data);
+    await cacheData('cachedPrescriptions', result);
+    return result;
+  }
 }

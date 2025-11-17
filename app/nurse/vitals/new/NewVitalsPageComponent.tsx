@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../lib/firebase';
+import { createVitals } from '../../../../lib/vitalsService';
 import { useAuth } from '../../../../context/AuthContext';
 import useRoleGuard from '../../../../hooks/useRoleGuard';
 import DashboardLayout from '../../../../components/DashboardLayout';
@@ -34,15 +33,9 @@ const NewVitalsPageComponent = () => {
       return;
     }
 
-    const newVitals = {
-      ...formData,
-      createdAt: serverTimestamp(),
-      createdBy: user.uid,
-    };
-
     try {
-      await addDoc(collection(db, 'patients', patientId, 'vitals'), newVitals);
-      toast.success('Vitals recorded successfully!');
+      await createVitals(patientId, formData, user.uid);
+      toast.success(navigator.onLine ? 'Vitals recorded successfully!' : 'Vitals saved offline - will sync when online');
       router.push(`/nurse/patient/${patientId}`);
     } catch (error) {
       console.error("Error recording vitals:", error);

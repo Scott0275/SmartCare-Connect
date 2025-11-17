@@ -28,19 +28,18 @@ export async function createLabRequest(patientId: string, doctorId: string, requ
     createdAt: Timestamp.now(),
   };
 
-  return executeWithOfflineSupport(
-    async () => {
-      const ref = await addDoc(collection(db, 'labRequests'), labRequest);
-      const result = { ...labRequest, id: ref.id };
-      await cacheData('cachedLabRequests', result);
-      return result;
-    },
-    async () => {
-      await queueAction('labRequests', requestId, labRequest, 'create');
-      await cacheData('cachedLabRequests', labRequest);
-      return labRequest;
-    }
-  );
+  if (!navigator.onLine) {
+    // Offline: queue action
+    await queueAction('labRequests', requestId, labRequest, 'create');
+    await cacheData('cachedLabRequests', labRequest);
+    return labRequest;
+  } else {
+    // Online: perform Firestore write immediately
+    const ref = await addDoc(collection(db, 'labRequests'), labRequest);
+    const result = { ...labRequest, id: ref.id };
+    await cacheData('cachedLabRequests', result);
+    return result;
+  }
 }
 
 export async function getLabRequestsForPatient(patientId: string) {

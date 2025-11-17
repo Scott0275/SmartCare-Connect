@@ -21,7 +21,9 @@ export default function SyncStatusPage() {
   const loadQueuedActions = async () => {
     try {
       const actions = await getQueuedActions();
-      setQueuedActions(actions);
+      // Only show actions marked as offline
+      const offlineActions = actions.filter(action => action.offline === true);
+      setQueuedActions(offlineActions);
     } catch (error) {
       console.error('Error loading queued actions:', error);
     }
@@ -38,7 +40,7 @@ export default function SyncStatusPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-medium text-gray-900">Pending Actions</h3>
+          <h3 className="font-medium text-gray-900">Offline Pending Actions</h3>
           <p className="text-2xl font-bold text-indigo-600">{queuedActions.length}</p>
         </div>
         <div className="bg-white p-4 rounded shadow">
@@ -54,9 +56,9 @@ export default function SyncStatusPage() {
       </div>
 
       <div className="bg-white rounded shadow overflow-auto">
-        <h3 className="font-medium p-4 border-b">Queued Actions</h3>
+        <h3 className="font-medium p-4 border-b">Offline Queued Actions</h3>
         {queuedActions.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">No pending actions</div>
+          <div className="p-4 text-center text-gray-500">No offline pending actions</div>
         ) : (
           <table className="min-w-full">
             <thead className="bg-gray-50">
