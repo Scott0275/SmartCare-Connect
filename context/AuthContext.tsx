@@ -7,9 +7,8 @@ import {
   signInWithEmailAndPassword,
   User,
 } from "firebase/auth";
-import { auth } from "../firebase/firebaseClient";
+import { auth, db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase/firebaseClient";
 import { useRouter } from "next/navigation";
 import useAutoSync from "@/hooks/useAutoSync";
 
@@ -38,6 +37,11 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   useAutoSync();
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
@@ -66,6 +70,10 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (!auth || !db) {
+      throw new Error('Firebase not initialized - check environment variables');
+    }
+    
     setLoading(true);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
@@ -110,7 +118,9 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   };
 
   const logout = async () => {
-    await firebaseSignOut(auth);
+    if (auth) {
+      await firebaseSignOut(auth);
+    }
     setUser(null);
     setRole(null);
     router.push("/login");
