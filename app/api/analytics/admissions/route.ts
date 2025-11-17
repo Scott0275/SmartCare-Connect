@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCachedData } from '@/lib/offlineDb';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const dateRange = searchParams.get('dateRange') || '30d';
 
     const patients = await getCachedData('cachedPatients') as any[] || [];
