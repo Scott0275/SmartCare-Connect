@@ -13,22 +13,23 @@ export async function createPatientOffline(patientData: any) {
     updatedAt: Timestamp.now(),
   };
 
-  if (!navigator.onLine) {
-    // Offline: queue action
-    await queueAction('patients', patientId, patient, 'create');
-    await cacheData('cachedPatients', patient);
-    return patient;
-  } else {
-    // Online: perform Firestore write immediately
-    const result = await addPatient(patientData);
-    await cacheData('cachedPatients', result);
-    return result;
-  }
+  return await executeWithOfflineSupport(
+    async () => {
+      const result = await addPatient(patientData);
+      await cacheData('cachedPatients', result);
+      return result;
+    },
+    async () => {
+      await queueAction('patients', patientId, patient, 'create');
+      await cacheData('cachedPatients', patient);
+      return patient;
+    }
+  );
 }
 
 export async function searchPatientsOffline(query: string) {
-  if (navigator.onLine) {
-    try {
+  return await executeWithOfflineSupport(
+    async () => {
       const allPatients = await getPatients();
       const results = allPatients.filter(patient => 
         patient.firstName?.toLowerCase().includes(query.toLowerCase()) ||
@@ -36,25 +37,21 @@ export async function searchPatientsOffline(query: string) {
         patient.email?.toLowerCase().includes(query.toLowerCase()) ||
         patient.id?.toLowerCase().includes(query.toLowerCase())
       );
-      // Cache results
       for (const patient of results) {
         await cacheData('cachedPatients', patient);
       }
       return results;
-    } catch (error) {
-      console.error('Online search failed, using cache:', error);
+    },
+    async () => {
+      const cached = await getCachedData('cachedPatients') as any[];
+      if (!cached) return [];
+      return cached.filter(patient => 
+        patient.firstName?.toLowerCase().includes(query.toLowerCase()) ||
+        patient.lastName?.toLowerCase().includes(query.toLowerCase()) ||
+        patient.email?.toLowerCase().includes(query.toLowerCase()) ||
+        patient.patientId?.toLowerCase().includes(query.toLowerCase())
+      );
     }
-  }
-  
-  // Offline search in cached data
-  const cached = await getCachedData('cachedPatients') as any[];
-  if (!cached) return [];
-  
-  return cached.filter(patient => 
-    patient.firstName?.toLowerCase().includes(query.toLowerCase()) ||
-    patient.lastName?.toLowerCase().includes(query.toLowerCase()) ||
-    patient.email?.toLowerCase().includes(query.toLowerCase()) ||
-    patient.patientId?.toLowerCase().includes(query.toLowerCase())
   );
 }
 

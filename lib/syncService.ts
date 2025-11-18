@@ -1,6 +1,7 @@
 import { addQueuedAction, getQueuedActions, removeQueuedAction, cacheData } from './offlineDb';
 import { db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, collection, Timestamp } from 'firebase/firestore';
+import { isOnline } from './networkService';
 
 export async function queueAction(
   collectionName: string,
@@ -8,14 +9,14 @@ export async function queueAction(
   payload: any,
   type: 'create' | 'update' | 'delete'
 ) {
-  // Only queue if offline
-  if (!navigator.onLine) {
+  const online = await isOnline();
+  if (!online) {
     return await addQueuedAction({
       type,
       collection: collectionName,
       docId,
       payload,
-      offline: true, // Mark as offline action
+      offline: true,
     });
   }
   return null;
@@ -105,20 +106,20 @@ async function createConflict(action: any, serverData: any) {
   });
 }
 
-export async function isOnline(): Promise<boolean> {
-  if (typeof navigator === 'undefined') return true;
-  return navigator.onLine;
-}
-
 export async function executeWithOfflineSupport<T>(
   onlineAction: () => Promise<T>,
   offlineAction: () => Promise<T>
 ): Promise<T> {
-  if (navigator.onLine) {
-    // When online, perform Firestore write immediately
-    return await onlineAction();
+  const online = await isOnline();
+  if (online) {
+    try {
+      const result = await onlineAction();
+      return result;
+    } catch (error) {
+      console.warn('Online action failed, falling back to offline:', error);
+      return await offlineAction();
+    }
   } else {
-    // When offline, queue the action
     return await offlineAction();
   }
 }

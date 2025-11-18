@@ -74,6 +74,10 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       throw new Error('Firebase not initialized - check environment variables');
     }
     
+    // Require online for login
+    const { requireOnlineForAuth } = await import('@/lib/authService');
+    await requireOnlineForAuth();
+    
     setLoading(true);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);

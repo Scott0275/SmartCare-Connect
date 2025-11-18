@@ -25,9 +25,36 @@ const Login = () => {
     return null;
   }
 
+  const demoCredentials = {
+    admin: { email: 'admin@smartcare.demo', password: 'demo123' },
+    doctor: { email: 'doctor@smartcare.demo', password: 'demo123' },
+    nurse: { email: 'nurse@smartcare.demo', password: 'demo123' },
+    patient: { email: 'patient@smartcare.demo', password: 'demo123' },
+    labtech: { email: 'labtech@smartcare.demo', password: 'demo123' },
+    pharmacy: { email: 'pharmacy@smartcare.demo', password: 'demo123' }
+  };
+
+  const fillDemoCredentials = () => {
+    const creds = demoCredentials[selectedRole as keyof typeof demoCredentials];
+    if (creds) {
+      setEmail(creds.email);
+      setPassword(creds.password);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <p className="text-red-500">{error}</p>}
+      <div className="p-3 bg-blue-50 rounded-md">
+        <p className="text-sm text-blue-700 mb-2">Demo Credentials Available:</p>
+        <button
+          type="button"
+          onClick={fillDemoCredentials}
+          className="text-xs bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded"
+        >
+          Fill {selectedRole} demo credentials
+        </button>
+      </div>
       <div>
         <label htmlFor="role" className="block text-sm font-medium text-gray-700">
           Role (for selection only)

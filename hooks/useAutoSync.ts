@@ -1,11 +1,13 @@
 "use client";
 import { useEffect } from 'react';
 import { syncPendingActions } from '@/lib/syncService';
+import { isOnline, resetHealthCheckFailures } from '@/lib/networkService';
 
 export default function useAutoSync() {
   useEffect(() => {
     const handleOnline = async () => {
       try {
+        resetHealthCheckFailures();
         await syncPendingActions();
         localStorage.setItem('lastSyncTime', Date.now().toString());
       } catch (error) {
@@ -13,13 +15,14 @@ export default function useAutoSync() {
       }
     };
 
-    // Sync when coming online
-    window.addEventListener('online', handleOnline);
+    const checkAndSync = async () => {
+      if (await isOnline()) {
+        await handleOnline();
+      }
+    };
 
-    // Initial sync if online
-    if (navigator.onLine) {
-      handleOnline();
-    }
+    window.addEventListener('online', handleOnline);
+    checkAndSync();
 
     return () => {
       window.removeEventListener('online', handleOnline);
