@@ -1,9 +1,9 @@
 import React from 'react';
 import { getTriageLevelColor, getTriageLevelLabel } from '@/lib/triageService';
-import type { TriageRecord } from '@/lib/triageService';
+
 
 interface UrgencyBadgeProps {
-  level: TriageRecord['triageLevel'];
+  level: number;
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -14,11 +14,12 @@ export default function UrgencyBadge({ level, size = 'md' }: UrgencyBadgeProps) 
     lg: 'px-4 py-2 text-base',
   };
 
-  const iconMap = {
-    emergency: '🚨',
-    urgent: '⚠️',
-    'semi-urgent': '⏰',
-    'non-urgent': '✅',
+  const iconMap: { [key: number]: string } = {
+    1: '🚨',
+    2: '⚠️',
+    3: '⏰',
+    4: '✅',
+    5: '✅',
   };
 
   return (

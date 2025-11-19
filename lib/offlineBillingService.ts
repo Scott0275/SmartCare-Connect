@@ -24,7 +24,7 @@ export async function createBill(patientId: string, createdBy: string, items: an
     async () => {
       await queueAction('billing', billId, billData, 'create');
       await cacheData('cachedBilling', { id: billId, ...billData });
-      return { id: billId, ...billData };
+      return billId;
     }
   );
 }
@@ -33,13 +33,13 @@ export async function addItemToBill(billId: string, item: any) {
   return await executeWithOfflineSupport(
     async () => {
       const result = await originalAddItemToBill(billId, item);
-      await cacheData('cachedBilling', { id: billId, ...result });
+      // Cache will be updated by the original function
       return result;
     },
     async () => {
       await queueAction('billing', billId, { addItem: item }, 'update');
       const cachedBill = await cacheData('cachedBilling', { id: billId, addedItem: item });
-      return cachedBill;
+      return true;
     }
   );
 }

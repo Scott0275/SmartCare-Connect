@@ -17,7 +17,7 @@ export default function TriageHistory({ patientId }: TriageHistoryProps) {
 
   const loadTriageHistory = async () => {
     try {
-      const records = await getTriageRecords({ patientId });
+      const records = await getTriageRecords();
       setTriageRecords(records);
     } catch (error) {
       console.error('Error loading triage history:', error);

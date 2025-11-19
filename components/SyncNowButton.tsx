@@ -1,27 +1,29 @@
 "use client";
 import React, { useState } from 'react';
-import { syncPendingActions } from '@/lib/syncService';
+import { syncPendingActions } from '@/lib/syncEngine';
+import { checkNetworkHealth } from '@/lib/networkService';
 import toast from 'react-hot-toast';
 
 export default function SyncNowButton() {
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
-    if (!navigator.onLine) {
+    const online = await checkNetworkHealth();
+    if (!online) {
       toast.error('Cannot sync while offline');
       return;
     }
 
     setSyncing(true);
     try {
-      const result = await syncPendingActions();
+      const results = await syncPendingActions();
+      const successful = results.filter(r => r.success).length;
+      const failed = results.filter(r => !r.success).length;
       
-      if (result.conflicts > 0) {
-        toast.error(`⚠ ${result.conflicts} conflicts detected. Check admin panel.`);
-      } else if (result.errors > 0) {
-        toast.error(`❌ ${result.errors} sync errors occurred`);
-      } else if (result.success > 0) {
-        toast.success(`✔ Synced ${result.success} items successfully`);
+      if (failed > 0) {
+        toast.error(`❌ ${failed} sync errors occurred`);
+      } else if (successful > 0) {
+        toast.success(`✔ Synced ${successful} items successfully`);
       } else {
         toast.success('✔ No offline actions to sync');
       }
@@ -36,7 +38,7 @@ export default function SyncNowButton() {
   return (
     <button
       onClick={handleSync}
-      disabled={syncing || !navigator.onLine}
+      disabled={syncing}
       className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
     >
       {syncing ? 'Syncing...' : 'Sync Now'}

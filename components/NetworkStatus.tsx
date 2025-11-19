@@ -1,13 +1,18 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { getQueuedActions } from '@/lib/offlineDb';
+import { checkNetworkHealth, isOnline } from '@/lib/networkService';
 
 export default function NetworkStatus() {
-  const [isOnline, setIsOnline] = useState(true);
+  const [networkOnline, setNetworkOnline] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    const updateNetworkStatus = async () => {
+      const online = await checkNetworkHealth();
+      setNetworkOnline(online);
+    };
+    
     const updatePendingCount = async () => {
       try {
         const actions = await getQueuedActions();
@@ -18,24 +23,27 @@ export default function NetworkStatus() {
     };
 
     // Initial status
-    updateOnlineStatus();
+    updateNetworkStatus();
     updatePendingCount();
 
     // Listen for online/offline events
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', () => setNetworkOnline(false));
 
-    // Update pending count periodically
-    const interval = setInterval(updatePendingCount, 5000);
+    // Update status periodically
+    const interval = setInterval(() => {
+      updateNetworkStatus();
+      updatePendingCount();
+    }, 5000);
 
     return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
+      window.removeEventListener('online', updateNetworkStatus);
+      window.removeEventListener('offline', () => setNetworkOnline(false));
       clearInterval(interval);
     };
   }, []);
 
-  if (isOnline && pendingCount === 0) {
+  if (networkOnline && pendingCount === 0) {
     return (
       <div className="bg-green-50 border-l-4 border-green-400 p-2">
         <div className="flex items-center">
@@ -58,7 +66,7 @@ export default function NetworkStatus() {
         </div>
         <div className="ml-3">
           <p className="text-sm text-red-700">
-            {isOnline ? `${pendingCount} pending sync items` : `Offline — ${pendingCount} pending sync items`}
+            {networkOnline ? `${pendingCount} pending sync items` : `Offline — ${pendingCount} pending sync items`}
           </p>
         </div>
       </div>

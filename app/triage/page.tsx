@@ -60,7 +60,7 @@ export default function TriageDashboardPage() {
         }
       }
 
-      await updateTriageStatus(triageId, status);
+      await updateTriageStatus(triageId, status, 'user');
       toast.success(navigator.onLine ? 'Status updated' : 'Status updated offline - will sync when online');
       await loadTriageData();
     } catch (error) {

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import TriageCard from './TriageCard';
 import UrgencyBadge from './UrgencyBadge';
-import type { TriageRecord } from '@/lib/triageService';
+
 
 interface TriageQueueProps {
-  triageRecords: TriageRecord[];
+  triageRecords: any[];
   patientNames: { [patientId: string]: string };
-  onStatusUpdate?: (triageId: string, status: TriageRecord['status']) => void;
+  onStatusUpdate?: (triageId: string, status: string) => void;
   showFilters?: boolean;
 }
 

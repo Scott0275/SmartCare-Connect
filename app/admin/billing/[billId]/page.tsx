@@ -11,7 +11,7 @@ export default function AdminBillingControlPage() {
   const { billId } = useParams() as { billId: string };
   const [bill, setBill] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +24,8 @@ export default function AdminBillingControlPage() {
   }, [billId]);
 
   const handleEdit = (itemId: string) => {
-    setEditingIndex(itemId);
+    const index = bill.items.findIndex((item: any) => item.id === itemId);
+    setEditingIndex(index);
     setShowModal(true);
   };
 
@@ -46,7 +47,8 @@ export default function AdminBillingControlPage() {
 
   const handleDelete = async (itemId: string) => {
     if (!bill) return;
-    await deleteBillItem(bill.id, itemId);
+    const index = bill.items.findIndex((item: any) => item.id === itemId);
+    await deleteBillItem(bill.id, index);
     const b = await getBillById(bill.id);
     setBill(b);
     toast.success("Item deleted");
@@ -54,7 +56,7 @@ export default function AdminBillingControlPage() {
 
   const handleMarkPaid = async () => {
     if (!bill) return;
-    await markBillAsPaid(bill.id);
+    await markBillAsPaid(bill.id, 'admin');
     const b = await getBillById(bill.id);
     setBill(b);
     toast.success("Marked as paid");
@@ -116,7 +118,7 @@ export default function AdminBillingControlPage() {
       {showModal && (
         <AddBillingItemModal
           role="admin"
-          existingItem={editingIndex !== null ? bill.items.find((i: any) => i.id === editingIndex) : undefined}
+          existingItem={editingIndex !== null ? bill.items[editingIndex] : undefined}
           onSubmit={handleSaveItem}
           onClose={() => { setShowModal(false); setEditingIndex(null); }}
         />

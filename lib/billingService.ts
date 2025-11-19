@@ -1,114 +1,100 @@
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  getDocs,
-  orderBy,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createDocument, updateDocument } from './syncEngine';
+import { cacheData, getCachedData } from './offlineDb';
 
-// Billing design: billing collection stores bill metadata.
-// Each bill has a subcollection `items` for line items to avoid array concurrency issues.
-
-export async function createBill(patientId: string, createdBy: string, items: any[]) {
-  const totalAmount = items.reduce((s, it) => s + (it.total || it.cost * it.quantity || 0), 0);
-  const payload = {
+export async function createBill(patientId: string, userId: string, items: any[]) {
+  const billData = {
     patientId,
-    createdBy,
-    totalAmount,
-    status: "unpaid",
-    createdAt: Timestamp.now(),
-  } as any;
+    createdBy: userId,
+    items,
+    total: items.reduce((sum, item) => sum + (item.total || 0), 0),
+    status: 'pending',
+    createdAt: new Date(),
+    id: `bill_${patientId}_${Date.now()}`
+  };
 
-  const billRef = await addDoc(collection(db, "billing"), payload);
-
-  // add items to subcollection
-  const itemsCol = collection(db, "billing", billRef.id, "items");
-  const added: any[] = [];
-  for (const it of items) {
-    const itemPayload = { ...it, createdAt: Timestamp.now() };
-    const r = await addDoc(itemsCol, itemPayload);
-    added.push({ id: r.id, ...itemPayload });
+  try {
+    const docId = await createDocument('billing', billData);
+    return docId;
+  } catch (error) {
+    await cacheData('cachedBilling', billData);
+    throw error;
   }
-
-  return { id: billRef.id, ...payload, items: added };
-}
-
-export async function addItemToBill(billId: string, item: any) {
-  const billRef = doc(db, "billing", billId);
-  const billSnap = await getDoc(billRef);
-  if (!billSnap.exists()) throw new Error("Bill not found");
-
-  const itemsCol = collection(db, "billing", billId, "items");
-  const itemPayload = { ...item, createdAt: Timestamp.now() };
-  const r = await addDoc(itemsCol, itemPayload);
-
-  // update totalAmount on bill
-  const currentTotal = (billSnap.data() as any).totalAmount || 0;
-  const addAmount = itemPayload.total || itemPayload.cost * itemPayload.quantity || 0;
-  const newTotal = currentTotal + addAmount;
-  await updateDoc(billRef, { totalAmount: newTotal });
-
-  return { id: r.id, ...itemPayload, totalAmount: newTotal };
-}
-
-export async function updateBillItem(billId: string, itemId: string, updatedItem: any) {
-  const itemRef = doc(db, "billing", billId, "items", itemId);
-  const itemSnap = await getDoc(itemRef);
-  if (!itemSnap.exists()) throw new Error("Item not found");
-
-  await updateDoc(itemRef, { ...updatedItem });
-
-  // recompute total
-  const itemsSnap = await getDocs(collection(db, "billing", billId, "items"));
-  const items = itemsSnap.docs.map((d) => d.data() as any);
-  const totalAmount = items.reduce((s: number, it: any) => s + (it.total || it.cost * it.quantity || 0), 0);
-  await updateDoc(doc(db, "billing", billId), { totalAmount });
-
-  return { id: itemId, ...updatedItem, totalAmount };
-}
-
-export async function deleteBillItem(billId: string, itemId: string) {
-  const itemRef = doc(db, "billing", billId, "items", itemId);
-  const itemSnap = await getDoc(itemRef);
-  if (!itemSnap.exists()) throw new Error("Item not found");
-  await deleteDoc(itemRef);
-
-  // recompute total
-  const itemsSnap = await getDocs(collection(db, "billing", billId, "items"));
-  const items = itemsSnap.docs.map((d) => d.data() as any);
-  const totalAmount = items.reduce((s: number, it: any) => s + (it.total || it.cost * it.quantity || 0), 0);
-  await updateDoc(doc(db, "billing", billId), { totalAmount });
-
-  return { id: billId, totalAmount };
-}
-
-export async function markBillAsPaid(billId: string) {
-  const ref = doc(db, "billing", billId);
-  await updateDoc(ref, { status: "paid" });
-  const snap = await getDoc(ref);
-  return { id: billId, ...(snap.data() as any) };
-}
-
-export async function getBillsForPatient(patientId: string) {
-  const q = query(collection(db, "billing"), where("patientId", "==", patientId), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
 }
 
 export async function getBillById(billId: string) {
-  const ref = doc(db, "billing", billId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  const bill = { id: snap.id, ...(snap.data() as any) };
-  // load items
-  const itemsSnap = await getDocs(query(collection(db, "billing", billId, "items"), orderBy("createdAt", "desc")));
-  const items = itemsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-  return { ...bill, items };
+  try {
+    const cached = await getCachedData('cachedBilling', billId);
+    return cached;
+  } catch (error) {
+    console.error('Error getting bill:', error);
+    return null;
+  }
+}
+
+export async function getBillsForPatient(patientId: string) {
+  try {
+    const cached = await getCachedData('cachedBilling') as any[];
+    return cached?.filter(bill => bill.patientId === patientId) || [];
+  } catch (error) {
+    console.error('Error getting bills:', error);
+    return [];
+  }
+}
+
+export async function updateBillItem(billId: string, itemIndex: number, itemData: any) {
+  try {
+    const bill = await getBillById(billId);
+    if (bill && bill.items[itemIndex]) {
+      bill.items[itemIndex] = { ...bill.items[itemIndex], ...itemData };
+      bill.total = bill.items.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      await updateDocument('billing', billId, { items: bill.items, total: bill.total });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function addItemToBill(billId: string, item: any) {
+  try {
+    const bill = await getBillById(billId);
+    if (bill) {
+      bill.items.push(item);
+      bill.total = bill.items.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      await updateDocument('billing', billId, { items: bill.items, total: bill.total });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteBillItem(billId: string, itemIndex: number) {
+  try {
+    const bill = await getBillById(billId);
+    if (bill && bill.items[itemIndex]) {
+      bill.items.splice(itemIndex, 1);
+      bill.total = bill.items.reduce((sum: number, item: any) => sum + (item.total || 0), 0);
+      await updateDocument('billing', billId, { items: bill.items, total: bill.total });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function markBillAsPaid(billId: string, userId: string) {
+  try {
+    await updateDocument('billing', billId, {
+      status: 'paid',
+      paidAt: new Date(),
+      paidBy: userId
+    });
+    return true;
+  } catch (error) {
+    throw error;
+  }
 }

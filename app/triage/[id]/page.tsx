@@ -48,7 +48,7 @@ export default function TriageDetailsPage() {
     
     setUpdating(true);
     try {
-      await updateTriageStatus(id, newStatus);
+      await updateTriageStatus(id, newStatus, 'user');
       toast.success(navigator.onLine ? 'Status updated' : 'Status updated offline - will sync when online');
       await loadTriageData();
     } catch (error) {
@@ -74,7 +74,7 @@ export default function TriageDetailsPage() {
         },
       });
       
-      await updateTriageStatus(id, 'doctor_started');
+      await updateTriageStatus(id, 'doctor_started', 'doctor');
       toast.success('Encounter started successfully');
       router.push(`/doctor/patients/${triage.patientId}/consultation`);
     } catch (error) {

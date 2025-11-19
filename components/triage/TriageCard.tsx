@@ -1,17 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import UrgencyBadge from './UrgencyBadge';
-import type { TriageRecord } from '@/lib/triageService';
+
 
 interface TriageCardProps {
-  triage: TriageRecord;
+  triage: any;
   patientName?: string;
   showActions?: boolean;
-  onStatusUpdate?: (triageId: string, status: TriageRecord['status']) => void;
+  onStatusUpdate?: (triageId: string, status: string) => void;
 }
 
 export default function TriageCard({ triage, patientName, showActions = true, onStatusUpdate }: TriageCardProps) {
-  const getStatusColor = (status: TriageRecord['status']) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-orange-100 text-orange-800';
       case 'completed': return 'bg-blue-100 text-blue-800';

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getRecentPatients } from "@/lib/offlinePatientService";
 import SyncNowButton from "@/components/SyncNowButton";
 import SyncPendingButton from "@/components/SyncPendingButton";
+import DebugFirestore from "@/components/DebugFirestore";
 import Link from "next/link";
 
 export default function NurseDashboardPage() {
@@ -92,6 +93,11 @@ export default function NurseDashboardPage() {
             <div className="text-2xl mb-2">📱</div>
             <div>Scan QR</div>
           </Link>
+        </div>
+
+        {/* Debug Panel */}
+        <div className="mb-6">
+          <DebugFirestore />
         </div>
 
         {/* Recent Patients */}

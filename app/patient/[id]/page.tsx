@@ -254,7 +254,7 @@ export default function PatientProfilePage() {
                 {role === 'admin' && bill.status === 'unpaid' && (
                   <button
                     onClick={async () => {
-                      await markBillAsPaid(bill.id);
+                      await markBillAsPaid(bill.id, 'patient');
                       const bs = await getBillsForPatient(id as string);
                       setBills(bs);
                       toast.success('Bill marked as paid');

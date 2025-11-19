@@ -77,6 +77,14 @@ interface OfflineDB extends DBSchema {
     key: string;
     value: any;
   };
+  cachedShiftReports: {
+    key: string;
+    value: any;
+  };
+  cachedUsers: {
+    key: string;
+    value: any;
+  };
   analyticsSnapshots: {
     key: string;
     value: any;
@@ -144,6 +152,12 @@ export async function initOfflineDB() {
       }
       if (!db.objectStoreNames.contains('cachedTriage')) {
         db.createObjectStore('cachedTriage', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedShiftReports')) {
+        db.createObjectStore('cachedShiftReports', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cachedUsers')) {
+        db.createObjectStore('cachedUsers', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('analyticsSnapshots')) {
         db.createObjectStore('analyticsSnapshots', { keyPath: 'timestamp' });

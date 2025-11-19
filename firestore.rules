@@ -126,6 +126,20 @@ service cloud.firestore {
       allow write: if false; // System only
     }
     
+    // Vitals collection
+    match /vitals/{vitalId} {
+      allow read: if isAuthenticated() && (isAdmin() || isDoctor() || isNurse() || (isPatient() && resource.data.patientId == request.auth.uid));
+      allow create, update: if isAuthenticated() && (isAdmin() || isNurse());
+      allow delete: if isAdmin();
+    }
+    
+    // Shift Reports collection
+    match /shiftReports/{reportId} {
+      allow read: if isAuthenticated() && (isAdmin() || isNurse() || isDoctor());
+      allow create, update: if isAuthenticated() && (isAdmin() || isNurse());
+      allow delete: if isAdmin();
+    }
+    
     // Analytics snapshots (admin only)
     match /analyticsSnapshots/{snapshotId} {
       allow read, write: if isAdmin();

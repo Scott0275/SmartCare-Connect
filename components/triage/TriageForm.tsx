@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { createTriage } from '@/lib/triageService';
-import type { TriageRecord } from '@/lib/triageService';
+
 import toast from 'react-hot-toast';
 
 interface TriageFormProps {
@@ -15,7 +15,7 @@ export default function TriageForm({ patientId, appointmentId, onSuccess, onCanc
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     complaint: '',
-    triageLevel: 'non-urgent' as TriageRecord['triageLevel'],
+    triageLevel: 'non-urgent',
     notes: '',
     vitals: {
       temperature: '',
@@ -61,12 +61,14 @@ export default function TriageForm({ patientId, appointmentId, onSuccess, onCanc
         }
       });
 
-      const triageId = await createTriage(patientId, user.uid, {
+      const triageId = await createTriage({
+        patientId,
         complaint: formData.complaint,
         triageLevel: formData.triageLevel,
         notes: formData.notes,
         vitals: vitalsData,
-      }, appointmentId);
+        appointmentId
+      }, user.uid);
 
       toast.success(navigator.onLine ? 'Triage completed successfully' : 'Triage saved offline - will sync when online');
       onSuccess(triageId);
@@ -101,7 +103,7 @@ export default function TriageForm({ patientId, appointmentId, onSuccess, onCanc
           <label className="block text-sm font-medium mb-2">Triage Level *</label>
           <select
             value={formData.triageLevel}
-            onChange={(e) => setFormData(prev => ({ ...prev, triageLevel: e.target.value as TriageRecord['triageLevel'] }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, triageLevel: e.target.value }))}
             className="w-full border rounded px-3 py-2"
             required
           >
