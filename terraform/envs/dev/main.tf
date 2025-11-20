@@ -5,6 +5,7 @@ terraform {
       version = "~> 5.0"
     }
   }
+<<<<<<< HEAD
   backend "s3" {
     bucket         = "smartcare-terraform-state"
     key            = "dev/terraform.tfstate"
@@ -16,6 +17,12 @@ terraform {
 
 provider "aws" {
   region = "af-south-1"
+=======
+}
+
+provider "aws" {
+  region = "us-east-2"
+>>>>>>> dev
   default_tags {
     tags = {
       Project     = "SmartCare-Connect"
@@ -25,6 +32,7 @@ provider "aws" {
   }
 }
 
+<<<<<<< HEAD
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
@@ -76,3 +84,38 @@ module "security" {
   firebase_service_account       = var.firebase_service_account
 }
 
+=======
+# Cognito for authentication
+module "cognito" {
+  source = "../../modules/cognito"
+  
+  project_name = "smartcare-connect"
+  environment  = "dev"
+  aws_region   = "us-east-2"
+}
+
+# DynamoDB tables
+module "dynamodb" {
+  source = "../../modules/dynamodb"
+  
+  project_name = "smartcare-connect"
+  environment  = "dev"
+}
+
+# S3 storage and CloudFront
+module "storage" {
+  source = "../../modules/storage"
+  
+  project_name = "smartcare-connect"
+  environment  = "dev"
+}
+
+# API Gateway and Lambda
+module "api" {
+  source = "../../modules/api"
+  
+  project_name        = "smartcare-connect"
+  environment         = "dev"
+  patients_table_name = module.dynamodb.table_names.patients
+}
+>>>>>>> dev
