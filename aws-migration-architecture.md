@@ -116,16 +116,16 @@
 - [ ] Test offline sync with DynamoDB
 
 ### Phase 4: Storage Migration (Week 5)
-- [ ] Migrate Firebase Storage to S3
-- [ ] Update file upload/download logic
-- [ ] Configure CloudFront CDN
-- [ ] Test medical file access
+- [x] Migrate Firebase Storage to S3
+- [x] Update file upload/download logic
+- [x] Configure CloudFront CDN
+- [x] Test medical file access
 
 ### Phase 5: Functions Migration (Week 6)
-- [ ] Convert Firebase Functions to Lambda
-- [ ] Set up API Gateway endpoints
-- [ ] Update client-side API calls
-- [ ] Test all serverless functions
+- [x] Convert Firebase Functions to Lambda
+- [x] Set up API Gateway endpoints
+- [x] Update client-side API calls
+- [x] Test all serverless functions
 
 ### Phase 6: Testing & Optimization (Week 7-8)
 - [ ] End-to-end testing

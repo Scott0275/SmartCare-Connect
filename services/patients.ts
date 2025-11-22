@@ -1,23 +1,14 @@
-import { collection, addDoc, getDocs, query, orderBy, doc, getDoc, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { unifiedPatientService } from '@/lib/unified-patient-service';
 
 export async function addPatient(patientData: any) {
-  const col = collection(db, "patients");
-  const data = { ...patientData, createdAt: Timestamp.now() };
-  const ref = await addDoc(col, data);
-  return { id: ref.id, ...data };
+  const id = await unifiedPatientService.createPatient(patientData);
+  return { id, ...patientData };
 }
 
 export async function getPatients() {
-  const col = collection(db, "patients");
-  const q = query(col, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+  return await unifiedPatientService.getAllPatients();
 }
 
 export async function getPatientById(id: string) {
-  const ref = doc(db, "patients", id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  return { id: snap.id, ...(snap.data() as any) };
+  return await unifiedPatientService.getPatient(id);
 }

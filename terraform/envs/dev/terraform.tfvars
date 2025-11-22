@@ -1,5 +1,4 @@
 environment = "dev"
-aws_region  = "af-south-1"
 
 # Replace with your actual values
 alert_email = "laboyleslie0@gmail.com"

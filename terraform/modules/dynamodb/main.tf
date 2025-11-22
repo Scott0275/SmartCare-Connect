@@ -45,6 +45,42 @@ resource "aws_dynamodb_table" "patients" {
   }
 }
 
+# Users Table
+resource "aws_dynamodb_table" "users" {
+  name           = "${var.project_name}-${var.environment}-users"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "email"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "EmailIndex"
+    hash_key        = "email"
+    projection_type = "ALL"
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-users"
+    Environment = var.environment
+  }
+}
+
 # Prescriptions Table
 resource "aws_dynamodb_table" "prescriptions" {
   name           = "${var.project_name}-${var.environment}-prescriptions"

@@ -10,7 +10,31 @@ variable "firebase_api_key" {
 }
 
 variable "firebase_service_account" {
+
   description = "Firebase service account (base64)"
+
   type        = string
+
   sensitive   = true
+
+}
+
+
+
+variable "domain_name" {
+
+  description = "The domain name for the application."
+
+  type        = string
+
+}
+
+
+
+variable "environment" {
+
+  description = "The deployment environment (e.g., dev, staging, prod)."
+
+  type        = string
+
 }

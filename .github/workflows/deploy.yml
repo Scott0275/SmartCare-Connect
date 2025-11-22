@@ -2,12 +2,12 @@ name: Deploy to AWS
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 
 env:
-  AWS_REGION: af-south-1
+  AWS_REGION: us-east-2
   AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
 jobs:

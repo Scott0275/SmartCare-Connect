@@ -9,7 +9,7 @@ terraform {
   backend "s3" {
     bucket         = "smartcare-terraform-state"
     key            = "terraform.tfstate"
-    region         = "af-south-1"
+    region         = "us-east-2"
     encrypt        = true
     dynamodb_table = "terraform-locks"
   }

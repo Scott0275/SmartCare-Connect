@@ -11,20 +11,7 @@ resource "aws_cognito_user_pool" "main" {
     require_uppercase = true
   }
 
-  # User attributes
-  schema {
-    attribute_data_type = "String"
-    name               = "email"
-    required           = true
-    mutable           = true
-  }
-
-  schema {
-    attribute_data_type = "String"
-    name               = "role"
-    required           = false
-    mutable           = true
-  }
+  # User attributes (using existing schema)
 
   # Account recovery
   account_recovery_setting {
@@ -46,6 +33,10 @@ resource "aws_cognito_user_pool" "main" {
     Environment = var.environment
     Project     = var.project_name
   }
+
+  lifecycle {
+    ignore_changes = [schema]
+  }
 }
 
 # User Pool Client
@@ -55,10 +46,11 @@ resource "aws_cognito_user_pool_client" "main" {
 
   generate_secret = false
   
-  # OAuth settings
-  allowed_oauth_flows                  = ["code"]
-  allowed_oauth_flows_user_pool_client = true
-  allowed_oauth_scopes                 = ["email", "openid", "profile"]
+  # Explicit auth flows
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
   
   # Token validity
   access_token_validity  = 1  # 1 hour
@@ -73,10 +65,6 @@ resource "aws_cognito_user_pool_client" "main" {
 
   # Prevent user existence errors
   prevent_user_existence_errors = "ENABLED"
-
-  # Read and write attributes
-  read_attributes  = ["email", "custom:role"]
-  write_attributes = ["email", "custom:role"]
 }
 
 # Identity Pool for AWS resource access

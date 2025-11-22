@@ -49,24 +49,29 @@ resource "aws_cloudfront_distribution" "medical_files" {
   }
 
   enabled = true
+  comment = "Medical files CDN for ${var.project_name}-${var.environment}"
 
   default_cache_behavior {
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = "S3-${aws_s3_bucket.medical_files.bucket}"
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
-      query_string = false
+      query_string = true
+      headers      = ["Authorization"]
       cookies {
         forward = "none"
       }
     }
 
     min_ttl     = 0
-    default_ttl = 3600
-    max_ttl     = 86400
+    default_ttl = 300   # 5 minutes for medical files
+    max_ttl     = 3600  # 1 hour max
+
+    # Security headers
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
   }
 
   restrictions {
@@ -79,9 +84,45 @@ resource "aws_cloudfront_distribution" "medical_files" {
     cloudfront_default_certificate = true
   }
 
+  # Price class for cost optimization
+  price_class = "PriceClass_100"  # US, Canada, Europe
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-cdn"
     Environment = var.environment
+    Purpose     = "medical-files"
+  }
+}
+
+# CloudFront Response Headers Policy for security
+resource "aws_cloudfront_response_headers_policy" "security_headers" {
+  name = "${var.project_name}-${var.environment}-security-headers"
+
+  security_headers_config {
+    strict_transport_security {
+      override                   = true
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+    }
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+  }
+
+  custom_headers_config {
+    items {
+      header   = "X-Medical-File"
+      value    = "true"
+      override = false
+    }
   }
 }
 

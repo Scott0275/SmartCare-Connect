@@ -11,7 +11,7 @@ command -v terraform >/dev/null 2>&1 || { echo "Terraform required but not insta
 
 # Create S3 bucket for Terraform state
 echo "📦 Creating Terraform state bucket..."
-aws s3 mb s3://smartcare-terraform-state --region af-south-1 || echo "Bucket may already exist"
+aws s3 mb s3://smartcare-terraform-state --region us-east-2 || echo "Bucket may already exist"
 
 # Enable versioning
 aws s3api put-bucket-versioning \
@@ -25,7 +25,7 @@ aws dynamodb create-table \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST \
-    --region af-south-1 || echo "Table may already exist"
+    --region us-east-2 || echo "Table may already exist"
 
 # Initialize Terraform
 echo "🚀 Initializing Terraform..."
