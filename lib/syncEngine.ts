@@ -2,7 +2,7 @@ import { db, auth } from '@/lib/firebase';
 import { collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs } from 'firebase/firestore';
 import { initOfflineDB, addQueuedAction, getQueuedActions, removeQueuedAction, cacheData } from './offlineDb';
 import { checkNetworkHealth, isOnline } from './networkService';
-import { syncPendingActionsAWS, checkAWSHealth } from './sync-engine-aws';
+import { syncPendingActionsAWS, checkAWSHealth, createDocumentAWS, updateDocumentAWS, deleteDocumentAWS } from './sync-engine-aws';
 
 const useAWS = process.env.NEXT_PUBLIC_USE_AWS === 'true';
 
@@ -49,6 +49,10 @@ export async function executeWithOnlineFirst<T>(
 }
 
 export async function createDocument(collectionName: string, data: any) {
+  if (useAWS) {
+    return createDocumentAWS(collectionName, data);
+  }
+
   return executeWithOnlineFirst(
     async () => {
       // Remove the custom id from data before sending to Firestore
@@ -68,6 +72,10 @@ export async function createDocument(collectionName: string, data: any) {
 }
 
 export async function updateDocument(collectionName: string, docId: string, data: any) {
+  if (useAWS) {
+    return updateDocumentAWS(collectionName, docId, data);
+  }
+
   return executeWithOnlineFirst(
     async () => {
       await updateDoc(doc(db, collectionName, docId), data);
@@ -84,6 +92,10 @@ export async function updateDocument(collectionName: string, docId: string, data
 }
 
 export async function deleteDocument(collectionName: string, docId: string) {
+  if (useAWS) {
+    return deleteDocumentAWS(collectionName, docId);
+  }
+
   return executeWithOnlineFirst(
     async () => {
       await deleteDoc(doc(db, collectionName, docId));

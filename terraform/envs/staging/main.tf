@@ -55,43 +55,38 @@ module "api" {
   project_name = var.project_name
   environment  = var.environment
 
-  patients_table_name     = "patients-table-${var.environment}"
-  users_table_name        = "users-table-${var.environment}"
-  appointments_table_name = "appointments-table-${var.environment}"
-  cognito_user_pool_id    = "placeholder-cognito-pool-id"
+  patients_table_name     = module.dynamodb.table_names.patients
+  users_table_name        = module.dynamodb.table_names.users
+  appointments_table_name = module.dynamodb.table_names.appointments
+  cognito_user_pool_id    = module.cognito.user_pool_id
 }
 
 output "cognito_user_pool_id" {
   description = "Cognito User Pool ID for staging"
-  value       = "placeholder-cognito-pool-id"
+  value       = module.cognito.user_pool_id
 }
 
 output "cognito_client_id" {
   description = "Cognito Client ID for staging"
-  value       = "placeholder-cognito-client-id"
+  value       = module.cognito.user_pool_client_id
 }
 
 output "dynamodb_tables" {
   description = "DynamoDB table names for staging"
-  value = {
-    patients      = "patients-table-${var.environment}"
-    users         = "users-table-${var.environment}"
-    appointments  = "appointments-table-${var.environment}"
-    prescriptions = "prescriptions-table-${var.environment}"
-  }
+  value = module.dynamodb.table_names
 }
 
 output "api_endpoint" {
   description = "API Gateway endpoint for staging"
-  value       = "https://api-placeholder.smartcare-connect.com/api"
+  value       = module.api.api_gateway_url
 }
 
 output "s3_bucket" {
   description = "S3 bucket name for staging"
-  value       = "smartcare-medical-files-${var.environment}"
+  value       = module.storage.s3_bucket_name
 }
 
 output "cloudfront_domain" {
   description = "CloudFront domain for staging"
-  value       = "placeholder-cloudfront.example.com"
+  value       = module.storage.cloudfront_domain_name
 }

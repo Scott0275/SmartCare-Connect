@@ -76,18 +76,24 @@ exports.handler = async (event) => {
       }
     };
 
+    const generatedAt = new Date().toISOString();
+    // Return both a top-level metrics shape (backwards-compatible) and a `data` payload
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
+        // flatten main totals at top-level for tests that expect them
+        totalPatients: metrics.totalPatients,
+        totalAppointments: metrics.totalAppointments,
+        timestamp: generatedAt,
         data: metrics,
         meta: {
           dateRange,
           department,
           startDate: startDate || null,
           endDate: endDate || null,
-          generatedAt: new Date().toISOString()
+          generatedAt
         }
       })
     };

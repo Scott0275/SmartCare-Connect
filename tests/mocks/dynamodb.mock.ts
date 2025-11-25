@@ -72,6 +72,16 @@ export const mockAppointments = [
   },
 ];
 
+export const mockUsers = [
+  {
+    id: 'user-123',
+    email: 'testuser@example.com',
+    role: 'patient',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
 // Provide a lightweight in-memory DynamoDB-like stub for tests.
 export const dynamodb = {
   client: {
@@ -142,7 +152,49 @@ export const dynamodb = {
 };
 
 export async function setupDynamoDBMock() {
-  // no-op for in-memory stub
+  // install aws-sdk-client-mock for DynamoDBDocumentClient so code that
+  // uses @aws-sdk/lib-dynamodb is intercepted during tests
+  try {
+    const { mockClient } = require('aws-sdk-client-mock');
+    const { DynamoDBDocumentClient, ScanCommand, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
+
+    const ddbMock = mockClient(DynamoDBDocumentClient);
+
+    ddbMock.reset();
+
+    ddbMock.on(ScanCommand).callsFake((cmd: any) => {
+      const table = cmd.input?.TableName || cmd.TableName;
+      if (table === process.env.DYNAMODB_TABLE) return { Items: mockPatients, Count: mockPatients.length };
+      if (table === process.env.USERS_TABLE) return { Items: mockUsers, Count: mockUsers.length };
+      if (table === process.env.APPOINTMENTS_TABLE) return { Items: mockAppointments, Count: mockAppointments.length };
+      return { Items: [], Count: 0 };
+    });
+
+    ddbMock.on(GetCommand).callsFake((cmd: any) => {
+      const { TableName, Key } = cmd.input || cmd;
+      if (TableName === process.env.DYNAMODB_TABLE) {
+        const item = mockPatients.find(p => p.id === Key.id);
+        return { Item: item };
+      }
+      if (TableName === process.env.APPOINTMENTS_TABLE) {
+        const item = mockAppointments.find(a => a.id === Key.id);
+        return { Item: item };
+      }
+      return { Item: undefined };
+    });
+
+    ddbMock.on(PutCommand).resolves({});
+    ddbMock.on(UpdateCommand).resolves({});
+    ddbMock.on(DeleteCommand).resolves({});
+    ddbMock.on(QueryCommand).callsFake((cmd: any) => {
+      const table = cmd.input?.TableName || cmd.TableName;
+      if (table === process.env.APPOINTMENTS_TABLE) return { Items: mockAppointments, Count: mockAppointments.length };
+      return { Items: [], Count: 0 };
+    });
+  } catch (err) {
+    // If any import fails, leave the no-op behavior in place but surface warning
+    console.warn('setupDynamoDBMock: unable to setup aws-sdk-client-mock, falling back to simple stub:', err?.message || err);
+  }
 }
 
 export function cleanupDynamoDBMock() {

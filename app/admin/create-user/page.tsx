@@ -24,8 +24,15 @@ export default function CreateUserPage() {
       }
 
       if (user) {
-        const idToken = await user.getIdToken();
-        headers['Authorization'] = `Bearer ${idToken}`;
+        if (typeof (user as any).getIdToken === 'function' && !isAWSAuth) {
+          // Firebase user
+          const idToken = await (user as any).getIdToken();
+          headers['Authorization'] = `Bearer ${idToken}`;
+        } else if (isAWSAuth) {
+          // AWS Cognito — tokens are stored by AuthContext in localStorage
+          const idToken = typeof window !== 'undefined' ? localStorage.getItem('aws_id_token') : null;
+          if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
+        }
       }
 
       const res = await fetch('/api/createUser', {

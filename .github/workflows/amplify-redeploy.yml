@@ -1,0 +1,43 @@
+name: Amplify redeploy (staging)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+  push:
+    branches:
+      - main
+
+jobs:
+  start-amplify-release:
+    name: Start Amplify release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-2' }}
+
+      - name: Start Amplify Release
+        env:
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+          BRANCH_NAME: ${{ github.event.inputs.branch || github.ref_name || 'main' }}
+        run: |
+          if [ -z "$AMPLIFY_APP_ID" ]; then
+            echo "AMPLIFY_APP_ID secret missing - set repository secret AMPLIFY_APP_ID"
+            exit 1
+          fi
+
+          echo "Starting Amplify release for app: $AMPLIFY_APP_ID branch: $BRANCH_NAME"
+          aws amplify start-job --app-id "$AMPLIFY_APP_ID" --branch-name "$BRANCH_NAME" --job-type RELEASE

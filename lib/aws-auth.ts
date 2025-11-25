@@ -5,7 +5,7 @@ const cognitoClient = new CognitoIdentityProviderClient({
 });
 
 const USER_POOL_ID = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!;
-const CLIENT_ID = 'b4c8a0r60vqh2b75d62ivckhj'; // From AWS CLI output
+const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || 'b4c8a0r60vqh2b75d62ivckhj'; // allow env override for staging/production
 
 export interface CognitoUser {
   username: string;
@@ -38,10 +38,13 @@ export class AWSAuthService {
     // Decode ID token to get user info
     const idTokenPayload = JSON.parse(atob(IdToken!.split('.')[1]));
     
+    // Prefer explicit custom:role, fall back to cognito:groups (first group) when present
+    const roleFromGroups = Array.isArray(idTokenPayload['cognito:groups']) ? idTokenPayload['cognito:groups'][0] : undefined;
+
     return {
       username: idTokenPayload.email,
       email: idTokenPayload.email,
-      role: idTokenPayload['custom:role'],
+      role: idTokenPayload['custom:role'] || roleFromGroups,
       accessToken: AccessToken!,
       idToken: IdToken!,
       refreshToken: RefreshToken!,

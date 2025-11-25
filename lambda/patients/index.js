@@ -64,11 +64,18 @@ exports.handler = async (event) => {
     }
 
     if (event.httpMethod === 'POST') {
-      if (!event.headers || (event.headers['Content-Type'] && !event.headers['Content-Type'].includes('application/json') && !event.headers['content-type'])) {
+      const ct = (event.headers && (event.headers['Content-Type'] || event.headers['content-type'])) || '';
+      if (ct && !ct.includes('application/json')) {
         return { statusCode: 415, headers, body: JSON.stringify({ error: 'Invalid content-type' }) };
       }
 
-      const body = JSON.parse(event.body || '{}');
+      let body;
+      try {
+        body = JSON.parse(event.body || '{}');
+      } catch (err) {
+        // invalid JSON
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+      }
       // minimal validation
       if (!body.firstName || !body.lastName || !body.email) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };

@@ -9,7 +9,10 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 export class DynamoDBService {
   private getTableName(collection: string): string {
-    return `smartcare-connect-dev-${collection}`;
+    const project = process.env.NEXT_PUBLIC_PROJECT_NAME || 'smartcare';
+    const env = process.env.NEXT_PUBLIC_ENVIRONMENT || process.env.NEXT_PUBLIC_ENV || 'dev';
+    // table naming pattern matches Terraform: <project>-<environment>-<collection>
+    return `${project}-${env}-${collection}`;
   }
 
   async createDocument(collection: string, item: any): Promise<string> {

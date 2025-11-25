@@ -89,6 +89,24 @@ lambda/
    npm run verify:deployment
    ```
 
+## 🧰 Packaging & Staging Deploy (local)
+
+Before applying Terraform in the `staging` environment you can package the Lambda artifacts and create a ready-to-deploy archive bundle.
+
+```bash
+# Build zip artifacts for staging (created under terraform/envs/staging)
+npm run build:lambdas:staging
+
+# Run Terraform plan/apply for staging
+cd terraform/envs/staging
+terraform init
+terraform plan
+# review plan, then apply
+terraform apply
+```
+
+CI note: See `.github/workflows/deploy-lambdas-staging.yml` for a helper workflow that packages lambdas and runs terraform plan in CI.
+
 ## 🔐 Security Features
 
 - ✅ **CORS Configuration** - Proper cross-origin headers

@@ -6,6 +6,7 @@ output "table_names" {
     prescriptions = aws_dynamodb_table.prescriptions.name
     appointments  = aws_dynamodb_table.appointments.name
     vitals        = aws_dynamodb_table.vitals.name
+    triage        = aws_dynamodb_table.triage.name
     lab_results   = aws_dynamodb_table.lab_results.name
     billing       = aws_dynamodb_table.billing.name
   }

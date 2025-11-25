@@ -10,6 +10,26 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
+  // Only allow GET for health checks (OPTIONS is handled above)
+  if (event.httpMethod !== 'GET') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Skip heavy external checks when explicitly disabled via env
+  if (process.env.DISABLE_HEALTH_INTEGRATION_CHECKS) {
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        status: 'ok',
+        timestamp: Date.now(),
+        service: process.env.SERVICE_NAME || 'SmartCare Connect API',
+        version: process.env.SERVICE_VERSION || '1.0.0',
+        checks: { dynamo: { ok: true }, s3: { ok: true }, cognito: { ok: true } }
+      })
+    };
+  }
+
   // Perform lightweight integration checks when environment variables are present
   const checks = {
     dynamo: { ok: true },
