@@ -175,6 +175,17 @@ npx jest tests/e2e/ --coverage --coverageReporters=html
 - [ ] No flaky tests (run test suite 3x, all pass)
 - [ ] Performance tests pass (no timeout failures)
 
+### 1.5 Lambda unit tests
+
+Add unit tests for each AWS Lambda function under `lambda/__tests__/`. These cover `health`, `patients`, `analytics`, and `createUser` functions using aws-sdk-client-mock for local testing.
+
+Run the lambda-only tests locally:
+
+```bash
+# run only lambda tests (fast, local-only)
+npx jest lambda --runInBand
+```
+
 ---
 
 ## ⚡ 2. Performance Optimization

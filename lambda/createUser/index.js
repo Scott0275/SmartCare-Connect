@@ -2,8 +2,23 @@ const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPassw
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand } = require('@aws-sdk/lib-dynamodb');
 
-const cognitoClient = new CognitoIdentityProviderClient({});
-const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+function getCognitoClient() {
+  const opts = {};
+  if (process.env.JEST_WORKER_ID) {
+    opts.credentials = { accessKeyId: 'test', secretAccessKey: 'test' };
+    opts.region = process.env.AWS_REGION || 'us-east-2';
+  }
+  return new CognitoIdentityProviderClient(opts);
+}
+
+function getDynamoClient() {
+  const opts = {};
+  if (process.env.JEST_WORKER_ID) {
+    opts.credentials = { accessKeyId: 'test', secretAccessKey: 'test' };
+    opts.region = process.env.AWS_REGION || 'us-east-2';
+  }
+  return DynamoDBDocumentClient.from(new DynamoDBClient(opts));
+}
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const USERS_TABLE = process.env.USERS_TABLE;
@@ -31,7 +46,11 @@ exports.handler = async (event) => {
       };
     }
 
-    const { email, password, role } = JSON.parse(event.body);
+    const { email, password, role } = JSON.parse(event.body || '{}');
+
+    if (!email || !role) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
+    }
 
     // Create user in Cognito
     const createUserCommand = new AdminCreateUserCommand({
@@ -45,7 +64,22 @@ exports.handler = async (event) => {
       MessageAction: 'SUPPRESS'
     });
 
-    const userResult = await cognitoClient.send(createUserCommand);
+    // Prevent duplicate users by checking DynamoDB Users table (if present)
+    if (USERS_TABLE) {
+      try {
+        const { ScanCommand } = require('@aws-sdk/lib-dynamodb');
+        const scan = await getDynamoClient().send(new ScanCommand({ TableName: USERS_TABLE }));
+        const exists = (scan.Items || []).some((u) => u.email === email);
+        if (exists) {
+          return { statusCode: 409, headers, body: JSON.stringify({ error: 'User already exists' }) };
+        }
+      } catch (scanErr) {
+        // Log but continue - not fatal for create
+        console.warn('Users table scan failed (createUser):', scanErr?.message || scanErr);
+      }
+    }
+
+    const userResult = await getCognitoClient().send(createUserCommand);
 
     // Set permanent password
     const setPasswordCommand = new AdminSetUserPasswordCommand({
@@ -55,7 +89,7 @@ exports.handler = async (event) => {
       Permanent: true
     });
 
-    await cognitoClient.send(setPasswordCommand);
+    await getCognitoClient().send(setPasswordCommand);
 
     // Save user role in DynamoDB
     const putCommand = new PutCommand({
@@ -68,14 +102,16 @@ exports.handler = async (event) => {
       }
     });
 
-    await dynamoClient.send(putCommand);
+    await getDynamoClient().send(putCommand);
 
     return {
-      statusCode: 200,
+      statusCode: 201,
       headers,
       body: JSON.stringify({
         success: true,
-        userId: userResult.User.Username
+        userId: userResult.User.Username,
+        email,
+        role
       })
     };
 

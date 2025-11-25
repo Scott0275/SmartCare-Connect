@@ -10,8 +10,8 @@ All Firebase Functions have been successfully converted to AWS Lambda functions 
 |----------|--------|------------|----------|
 | Health Check | ✅ Ready | ✅ Passed | `GET /health` |
 | Create User | ✅ Ready | ✅ Passed | `POST /createUser` |
-| Analytics | ✅ Ready | ⚠️ Needs AWS | `GET /analytics/summary` |
-| Patients CRUD | ✅ Ready | ⚠️ Needs AWS | `GET/POST/PUT/DELETE /patients` |
+| Analytics | ✅ Ready | ✅ Passed (unit) | `GET /analytics/summary` |
+| Patients CRUD | ✅ Ready | ✅ Passed (unit) | `GET/POST/PUT/DELETE /patients` |
 
 ## 🧪 Testing Commands
 
@@ -63,7 +63,7 @@ lambda/
 ### Current Status: **Local Testing Complete**
 
 1. ✅ **Lambda Functions Created** - All functions converted from Next.js API routes
-2. ✅ **Local Testing Passed** - Functions work correctly without AWS dependencies
+2. ✅ **Local Testing Passed** - Functions work correctly without AWS dependencies (unit tests added + passing)
 3. ⏳ **Infrastructure Deployment** - Terraform configuration ready
 4. ⏳ **API Gateway Integration** - Waiting for infrastructure deployment
 5. ⏳ **End-to-End Testing** - Requires deployed API Gateway
