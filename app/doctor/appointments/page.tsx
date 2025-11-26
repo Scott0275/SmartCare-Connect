@@ -28,7 +28,8 @@ export default function DoctorAppointmentsPage() {
     if (!user) return;
     
     try {
-      const appointmentData = await getAppointments({ doctorId: user.uid });
+      const userId = (user as any)?.uid ?? (user as any)?.username ?? (user as any)?.email ?? 'unknown';
+      const appointmentData = await getAppointments({ doctorId: userId });
       setAppointments(appointmentData);
     } catch (error) {
       console.error('Error loading appointments:', error);
@@ -75,7 +76,8 @@ export default function DoctorAppointmentsPage() {
       });
       
       // Create encounter draft
-      await createEncounter(appointment.patientId, user.uid, 'doctor', {
+      const userId = (user as any)?.uid ?? (user as any)?.username ?? (user as any)?.email ?? 'unknown';
+      await createEncounter(appointment.patientId, userId, 'doctor', {
         type: appointment.type === 'follow-up' ? 'follow-up' : 'consultation',
         soap: {
           subjective: '',
