@@ -34,7 +34,7 @@ function mapRequestToEvent(req: import('http').IncomingMessage, parsedUrl: URL, 
   };
 }
 
-function sendLambdaResponse(res, lambdaResponse) {
+function sendLambdaResponse(res: import('http').ServerResponse, lambdaResponse: any) {
   const statusCode = lambdaResponse?.statusCode || 200;
   const headers = lambdaResponse?.headers || {};
   const body = lambdaResponse?.body || '';
