@@ -24,5 +24,6 @@ const awsConfig = {
   }
 };
 
-Amplify.configure(awsConfig);
+// Amplify.configure expects specific Amplify config typings; cast to any
+Amplify.configure(awsConfig as any);
 export default awsConfig;
