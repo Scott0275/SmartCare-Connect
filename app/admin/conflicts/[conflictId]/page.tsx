@@ -37,11 +37,21 @@ export default function ConflictReviewPage() {
     
     setResolving(true);
     try {
+      // obtain a bearer token from either Firebase User or Cognito user
+      let idToken: string | null = null;
+      if ((user as any)?.getIdToken && typeof (user as any).getIdToken === 'function') {
+        idToken = await (user as any).getIdToken();
+      } else if ((user as any)?.idToken) {
+        idToken = (user as any).idToken;
+      } else if (typeof window !== 'undefined') {
+        idToken = localStorage.getItem('aws_id_token');
+      }
+
       const response = await fetch('/api/admin/conflicts/resolve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await user.getIdToken()}`
+          'Authorization': `Bearer ${idToken ?? ''}`
         },
         body: JSON.stringify({
           conflictId,
