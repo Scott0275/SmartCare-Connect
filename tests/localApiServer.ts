@@ -38,7 +38,7 @@ function sendLambdaResponse(res: import('http').ServerResponse, lambdaResponse: 
   const statusCode = lambdaResponse?.statusCode || 200;
   const headers = lambdaResponse?.headers || {};
   const body = lambdaResponse?.body || '';
-  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v as any));
   res.statusCode = statusCode;
   if (typeof body === 'string') {
     res.end(body);
