@@ -7,7 +7,7 @@ const patientsHandler = require('../lambda/patients/index.js').handler;
 const analyticsHandler = require('../lambda/analytics/index.js').handler;
 const createUserHandler = require('../lambda/createUser/index.js').handler;
 
-function parseBody(req) {
+function parseBody(req: import('http').IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
@@ -18,7 +18,7 @@ function parseBody(req) {
   });
 }
 
-function mapRequestToEvent(req, parsedUrl, bodyString) {
+function mapRequestToEvent(req: import('http').IncomingMessage, parsedUrl: URL, bodyString: string | null) {
   const query = Object.fromEntries(parsedUrl.searchParams || new URLSearchParams(parsedUrl.query || ''));
   let body = undefined;
   if (bodyString) {
