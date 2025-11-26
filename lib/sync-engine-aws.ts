@@ -116,6 +116,7 @@ export async function checkAWSHealth(): Promise<boolean> {
   } catch (error) {
     // If we get a network error, we're offline
     // If we get a "not found" error, we're online
-    return !error.message.includes('NetworkingError');
+    const msg = (error as any)?.message ?? String(error);
+    return !msg.includes('NetworkingError');
   }
 }
