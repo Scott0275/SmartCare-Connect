@@ -89,7 +89,7 @@ export default function NewAppointmentPage() {
       await createAppointment({
         ...formData,
         scheduledFor: new Date(formData.scheduledFor),
-        createdBy: user.uid,
+        createdBy: (user as any)?.uid ?? (user as any)?.username ?? (user as any)?.email ?? 'unknown',
       });
       
       toast.success(navigator.onLine ? 'Appointment created successfully' : 'Appointment saved offline - will sync when online');
