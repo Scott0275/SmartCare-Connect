@@ -11,7 +11,7 @@ export default function CreateUserPage() {
   const [role, setRole] = useState('patient')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const { user } = useAuth()
+  const { user, isAWSAuth } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
