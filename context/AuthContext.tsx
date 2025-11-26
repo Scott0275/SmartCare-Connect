@@ -88,7 +88,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         localStorage.setItem('aws_id_token', cognitoUser.idToken);
         localStorage.setItem('aws_refresh_token', cognitoUser.refreshToken);
         
-        redirectByRole(cognitoUser.role);
+        redirectByRole(cognitoUser.role || null);
       } else {
         // Firebase login
         if (!auth || !db) {
