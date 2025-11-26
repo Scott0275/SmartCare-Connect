@@ -10,6 +10,7 @@ const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || 'b4c8a0r60vqh2b75
 export interface CognitoUser {
   username: string;
   email: string;
+  uid?: string;
   role?: string;
   accessToken: string;
   idToken: string;
@@ -43,6 +44,7 @@ export class AWSAuthService {
 
     return {
       username: idTokenPayload.email,
+      uid: idTokenPayload.email,
       email: idTokenPayload.email,
       role: idTokenPayload['custom:role'] || roleFromGroups,
       accessToken: AccessToken!,
