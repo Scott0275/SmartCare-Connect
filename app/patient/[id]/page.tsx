@@ -15,7 +15,7 @@ import VisitForm from "@/components/VisitForm";
 export default function PatientProfilePage() {
   const { id } = useParams();
   const { loading } = useRoleGuard(["nurse", "doctor", "patient"]);
-  const { role, user } = useAuth();
+  const { role, user, isAWSAuth } = useAuth();
 
   const [patient, setPatient] = useState<any>(null);
   const [visits, setVisits] = useState<any[]>([]);
@@ -110,12 +110,18 @@ export default function PatientProfilePage() {
                 onClick={async () => {
                   if (!user) return toast.error('Not authenticated');
                   try {
-                    const idToken = await user.getIdToken();
+                    // obtain token from Firebase user or Cognito stored token
+                    let idToken: string | null = null;
+                    if ((user as any)?.getIdToken && typeof (user as any).getIdToken === 'function') {
+                      idToken = await (user as any).getIdToken();
+                    } else if (isAWSAuth) {
+                      idToken = typeof window !== 'undefined' ? localStorage.getItem('aws_id_token') : null;
+                    }
                     const res = await fetch('/api/createIndex', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${idToken}`,
+                        Authorization: `Bearer ${idToken ?? ''}`,
                       },
                       body: JSON.stringify({
                         collectionGroup: 'visits',
