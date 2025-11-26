@@ -72,8 +72,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
                     </button>
                     <div className="text-right">
-                        <p className="font-semibold">{user?.displayName || 'User'}</p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
+                        <p className="font-semibold">{(user as any)?.displayName ?? (user as any)?.email ?? (user as any)?.username ?? 'User'}</p>
+                        <p className="text-sm text-gray-500">{(user as any)?.email ?? (user as any)?.username}</p>
                     </div>
                 </header>
 
