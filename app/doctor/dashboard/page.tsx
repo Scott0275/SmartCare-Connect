@@ -47,7 +47,8 @@ export default function DoctorDashboardPage() {
       const labRequests = await getLabRequests();
       const prescriptions = await getPrescriptions();
       
-      const appointments = await getAppointments({ doctorId: user?.uid });
+      const userId = (user as any)?.uid ?? (user as any)?.username ?? (user as any)?.email ?? 'unknown';
+      const appointments = await getAppointments({ doctorId: userId });
       const today = new Date().toDateString();
       const todayAppointments = appointments?.filter((a: any) => {
         if (!a.scheduledFor) return false;
@@ -59,8 +60,8 @@ export default function DoctorDashboardPage() {
         todayAppointments,
         pendingAppointments: appointments?.filter((a: any) => a.status === 'pending').length || 0,
         pendingLabResults: labRequests?.filter((l: any) => ['pending', 'accepted', 'in_progress'].includes(l.status)).length || 0,
-        completedLabResults: labRequests?.filter((l: any) => l.status === 'completed' && l.doctorId === user?.uid).length || 0,
-        prescriptionsDispensed: prescriptions?.filter((p: any) => p.status === 'dispensed' && p.doctorId === user?.uid).length || 0,
+        completedLabResults: labRequests?.filter((l: any) => l.status === 'completed' && l.doctorId === userId).length || 0,
+        prescriptionsDispensed: prescriptions?.filter((p: any) => p.status === 'dispensed' && p.doctorId === userId).length || 0,
         patientsAwaitingReview: 3,
         draftConsultations: consultations?.filter((c: any) => c.status === 'draft').length || 0,
       });
