@@ -19,7 +19,7 @@ function parseBody(req: import('http').IncomingMessage): Promise<string> {
 }
 
 function mapRequestToEvent(req: import('http').IncomingMessage, parsedUrl: URL, bodyString: string | null) {
-  const query = Object.fromEntries(parsedUrl.searchParams || new URLSearchParams(parsedUrl.query || ''));
+  const query = Object.fromEntries(parsedUrl.searchParams);
   let body = undefined;
   if (bodyString) {
     try { body = JSON.parse(bodyString); } catch { body = bodyString; }
