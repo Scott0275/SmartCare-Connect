@@ -193,7 +193,8 @@ export async function setupDynamoDBMock() {
     });
   } catch (err) {
     // If any import fails, leave the no-op behavior in place but surface warning
-    console.warn('setupDynamoDBMock: unable to setup aws-sdk-client-mock, falling back to simple stub:', err?.message || err);
+    const msg = (err as any)?.message ?? String(err);
+    console.warn('setupDynamoDBMock: unable to setup aws-sdk-client-mock, falling back to simple stub:', msg);
   }
 }
 
