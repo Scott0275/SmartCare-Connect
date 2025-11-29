@@ -3,10 +3,11 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// It's common for hosting environments (like Amplify) to run a build
-// without having the firebase env vars configured. Protect imports so
-// that the app doesn't throw while running `next build` during CI.
-const isFirebaseConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+// Avoid initializing the Firebase *client* SDK during server-side build
+// (Amplify / Next build runs in Node). We only initialize in a browser
+// environment where NEXT_PUBLIC_FIREBASE_* variables are present.
+const isBrowser = typeof window !== 'undefined';
+const isFirebaseConfigured = isBrowser && !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 let appInstance: ReturnType<typeof initializeApp> | undefined;
 if (isFirebaseConfigured) {
@@ -24,6 +25,15 @@ if (isFirebaseConfigured) {
 	appInstance = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 }
 
-export const auth = appInstance ? getAuth(appInstance) : null;
-export const db = appInstance ? getFirestore(appInstance) : null;
-export const storage = appInstance ? getStorage(appInstance) : null;
+// Keep the exported types matching client SDK signatures to avoid
+// TypeScript churn in files that import these. If we didn't initialize
+// due to being in a server/build environment, we export typed `undefined`
+// at runtime (casted via any to satisfy TS). This prevents build-time
+// initialization errors while preserving existing types across the codebase.
+type AuthType = ReturnType<typeof getAuth>;
+type FirestoreType = ReturnType<typeof getFirestore>;
+type StorageType = ReturnType<typeof getStorage>;
+
+export const auth = (appInstance ? getAuth(appInstance) : (undefined as any)) as AuthType;
+export const db = (appInstance ? getFirestore(appInstance) : (undefined as any)) as FirestoreType;
+export const storage = (appInstance ? getStorage(appInstance) : (undefined as any)) as StorageType;
