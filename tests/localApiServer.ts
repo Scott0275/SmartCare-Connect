@@ -54,7 +54,7 @@ function sendLambdaResponse(res: import('http').ServerResponse, lambdaResponse: 
   }
 }
 
-function routeEvent(event) {
+function routeEvent(event: any) {
   const path = event.path || event.path || '/';
   if (path.startsWith('/api/health')) return healthHandler(event);
   if (path.startsWith('/api/patients')) return patientsHandler(event);
