@@ -69,7 +69,7 @@ function routeEvent(event: any) {
 
 module.exports = {
   start: (port = 0) => new Promise((resolve, reject) => {
-    const server = http.createServer(async (req, res) => {
+    const server = http.createServer(async (req: import('http').IncomingMessage, res: import('http').ServerResponse) => {
       try {
         const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
         const bodyString = await parseBody(req);
