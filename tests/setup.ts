@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load environment variables from .env.test
-const envFile = process.env.NODE_ENV === 'staging' 
+const envFile = (process.env.NODE_ENV as string) === 'staging'
   ? '.env.staging' 
   : '.env.test';
 
