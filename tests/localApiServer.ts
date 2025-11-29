@@ -71,7 +71,7 @@ module.exports = {
   start: (port = 0) => new Promise((resolve, reject) => {
     const server = http.createServer(async (req: import('http').IncomingMessage, res: import('http').ServerResponse) => {
       try {
-        const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+        const parsedUrl = new URL(req.url ?? '/', `http://${(req.headers as any).host ?? '127.0.0.1'}`);
         const bodyString = await parseBody(req);
         const event = mapRequestToEvent(req, parsedUrl, bodyString);
         const lambdaRes = await routeEvent(event);
