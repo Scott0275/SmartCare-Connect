@@ -38,7 +38,14 @@ function sendLambdaResponse(res: import('http').ServerResponse, lambdaResponse: 
   const statusCode = lambdaResponse?.statusCode || 200;
   const headers = lambdaResponse?.headers || {};
   const body = lambdaResponse?.body || '';
-  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v as any));
+  Object.entries(headers).forEach(([k, v]) => {
+    // Header values can be string | number | string[]; coerce safely
+    if (Array.isArray(v)) {
+      res.setHeader(k, v as string[]);
+    } else if (v !== undefined && v !== null) {
+      res.setHeader(k, String(v));
+    }
+  });
   res.statusCode = statusCode;
   if (typeof body === 'string') {
     res.end(body);
