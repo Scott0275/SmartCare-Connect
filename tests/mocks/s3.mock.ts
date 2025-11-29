@@ -26,7 +26,7 @@ export const mockS3Objects = [
 ];
 
 export async function setupS3Mock() {
-  s3.mock.on(GetObjectCommand).callsFake(async (input) => {
+  s3.mock.on(GetObjectCommand).callsFake(async (input: any) => {
     const { Key } = input;
     const obj = mockS3Objects.find(o => o.key === Key);
     
@@ -48,7 +48,7 @@ export async function setupS3Mock() {
     };
   });
 
-  s3.mock.on(PutObjectCommand).callsFake(async (input) => {
+  s3.mock.on(PutObjectCommand).callsFake(async (input: any) => {
     return {
       ETag: '"mock-etag-123"',
       VersionId: 'v1',
