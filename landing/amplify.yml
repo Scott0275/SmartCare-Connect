@@ -1,0 +1,25 @@
+version: 1
+applications:
+  - repository: https://github.com/yourusername/SmartCare-Connect
+    branch: main
+    appRoot: landing
+    frontend:
+      phases:
+        build:
+          commands:
+            - echo "Landing page is static - no build needed"
+      artifacts:
+        baseDirectory: .
+        files:
+          - '**/*'
+      cache:
+        paths: []
+    backend:
+      phases:
+        build:
+          commands:
+            - echo "Setting up backend environment"
+      artifacts:
+        baseDirectory: amplify/backend
+        files:
+          - '**/*'
