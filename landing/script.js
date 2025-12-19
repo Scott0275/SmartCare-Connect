@@ -9,7 +9,7 @@
     const app = {
         // Configuration
         config: {
-            emailServiceUrl: '/api/subscribe', // Amplify API Gateway endpoint
+            emailServiceUrl: 'https://zon8maijih.execute-api.us-east-1.amazonaws.com/prod', // Amplify API Gateway endpoint
             form: null,
             mobileMenuBtn: null,
             navbar: null,

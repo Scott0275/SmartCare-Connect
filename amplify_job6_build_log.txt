@@ -1,0 +1,97 @@
+2025-11-29T15:55:22.660Z [INFO]: # Build environment configured with Standard build compute type: 8GiB Memory, 4vCPUs, 128GB Disk Space
+2025-11-29T15:55:23.093Z [INFO]: # Cloning repository: git@github.com:Scott0275/SmartCare-Connect.git
+2025-11-29T15:55:23.697Z [INFO]: 
+2025-11-29T15:55:23.698Z [INFO]: Cloning into 'SmartCare-Connect'...
+2025-11-29T15:55:23.698Z [INFO]: # Switching to commit: 71f8c1f68db84600f3096cc6b5a05fc8c87dc4f6
+2025-11-29T15:55:23.714Z [INFO]: Note: switching to '71f8c1f68db84600f3096cc6b5a05fc8c87dc4f6'.
+                                 You are in 'detached HEAD' state. You can look around, make experimental
+                                 changes and commit them, and you can discard any commits you make in this
+                                 state without impacting any branches by switching back to a branch.
+                                 If you want to create a new branch to retain commits you create, you may
+                                 do so (now or later) by using -c with the switch command. Example:
+                                 git switch -c <new-branch-name>
+                                 Or undo this operation with:
+                                 git switch -
+                                 Turn off this advice by setting config variable advice.detachedHead to false
+                                 HEAD is now at 71f8c1f fix(firebase): avoid initializing firebase during build when env vars are missing
+2025-11-29T15:55:23.753Z [INFO]: Successfully cleaned up Git credentials
+2025-11-29T15:55:23.754Z [INFO]: # Checking for Git submodules at: /codebuild/output/src4204361855/src/SmartCare-Connect/.gitmodules
+2025-11-29T15:55:23.760Z [INFO]: # Retrieving environment cache...
+2025-11-29T15:55:23.800Z [WARNING]: ! Unable to write cache: {"code":"ERR_BAD_REQUEST","message":"Request failed with status code 404"})}
+2025-11-29T15:55:23.801Z [INFO]: ---- Setting Up SSM Secrets ----
+2025-11-29T15:55:23.801Z [INFO]: SSM params {"Path":"/amplify/d183vg1na563gq/main/","WithDecryption":true}
+2025-11-29T15:55:23.849Z [WARNING]: !Failed to set up process.env.secrets
+2025-11-29T15:55:24.476Z [INFO]: # No package override configuration found.
+2025-11-29T15:55:24.479Z [INFO]: # Retrieving cache...
+2025-11-29T15:55:29.485Z [INFO]: # Extracting cache...
+2025-11-29T15:55:30.288Z [INFO]: # Extraction completed
+2025-11-29T15:55:30.324Z [INFO]: # Retrieved cache
+2025-11-29T15:55:35.005Z [INFO]: ## Starting Backend Build
+                                 ## Checking for associated backend environment...
+                                 ## No backend environment association found, continuing...
+                                 ## Completed Backend Build
+2025-11-29T15:55:35.010Z [INFO]: {"backendDuration": 0}
+                                 ## Starting Frontend Build
+                                 # Starting phase: preBuild
+                                 # Executing command: npm ci --cache .npm --prefer-offline
+2025-11-29T15:55:53.943Z [WARNING]: npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-11-29T15:55:54.106Z [WARNING]: npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-11-29T15:55:54.124Z [WARNING]: npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-11-29T15:55:54.216Z [WARNING]: npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-11-29T15:55:54.235Z [WARNING]: npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-11-29T15:55:54.235Z [WARNING]: npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+                                    npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+                                    npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-11-29T15:55:54.236Z [WARNING]: npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-11-29T15:55:54.236Z [WARNING]: npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-11-29T15:55:54.236Z [WARNING]: npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-11-29T15:55:54.605Z [WARNING]: npm warn deprecated supertest@6.3.4: Please upgrade to supertest v7.1.3+, see release notes at https://github.com/forwardemail/supertest/releases/tag/v7.1.3 - maintenance is supported by Forward Email @ https://forwardemail.net
+2025-11-29T15:55:54.739Z [WARNING]: npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+2025-11-29T15:55:54.797Z [WARNING]: npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+2025-11-29T15:55:55.843Z [WARNING]: npm warn deprecated superagent@8.1.2: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
+2025-11-29T15:55:59.396Z [WARNING]: npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-11-29T15:56:04.827Z [INFO]: added 1352 packages, and audited 1353 packages in 25s
+                                 192 packages are looking for funding
+                                 run `npm fund` for details
+2025-11-29T15:56:05.420Z [INFO]: 14 vulnerabilities (10 moderate, 4 high)
+                                 To address issues that do not require attention, run:
+                                 npm audit fix
+                                 To address all issues (including breaking changes), run:
+                                 npm audit fix --force
+                                 Run `npm audit` for details.
+2025-11-29T15:56:05.452Z [INFO]: # Completed phase: preBuild
+                                 # Starting phase: build
+                                 # Executing command: npm run build
+2025-11-29T15:56:05.564Z [INFO]: > out@0.1.0 build
+                                 > next build
+2025-11-29T15:56:06.130Z [INFO]: ▲ Next.js 14.2.33
+2025-11-29T15:56:06.131Z [INFO]: 
+2025-11-29T15:56:06.190Z [INFO]: Creating an optimized production build ...
+2025-11-29T15:56:28.607Z [INFO]: ✓ Compiled successfully
+2025-11-29T15:56:28.611Z [INFO]: Linting and checking validity of types ...
+2025-11-29T15:56:36.904Z [WARNING]: Failed to compile.
+2025-11-29T15:56:36.908Z [WARNING]: ./app/admin/dashboard/page.tsx:21:47
+                                    Type error: No overload matches this call.
+                                    Overload 1 of 3, '(firestore: Firestore, path: string, ...pathSegments: string[]): CollectionReference<DocumentData, DocumentData>', gave the following error.
+                                    Argument of type 'Firestore | null' is not assignable to parameter of type 'Firestore'.
+                                    Type 'null' is not assignable to type 'Firestore'.
+                                    Overload 2 of 3, '(reference: CollectionReference<unknown, DocumentData>, path: string, ...pathSegments: string[]): CollectionReference<DocumentData, DocumentData>', gave the following error.
+                                    Argument of type 'Firestore | null' is not assignable to parameter of type 'CollectionReference<unknown, DocumentData>'.
+                                    Type 'null' is not assignable to type 'CollectionReference<unknown, DocumentData>'.
+                                    Overload 3 of 3, '(reference: DocumentReference<unknown, DocumentData>, path: string, ...pathSegments: string[]): CollectionReference<DocumentData, DocumentData>', gave the following error.
+                                    Argument of type 'Firestore | null' is not assignable to parameter of type 'DocumentReference<unknown, DocumentData>'.
+                                    Type 'null' is not assignable to type 'DocumentReference<unknown, DocumentData>'.
+                                    [0m [90m 19 |[39m[0m
+                                    [0m [90m 20 |[39m   useEffect(() [33m=>[39m {[0m
+                                    [0m[31m[1m>[22m[39m[90m 21 |[39m     [36mconst[39m unsubscribe [33m=[39m onSnapshot(collection(db[33m,[39m [32m'users'[39m)[33m,[39m (querySnapshot) [33m=>[39m {[0m
+                                    [0m [90m    |[39m                                               [31m[1m^[22m[39m[0m
+                                    [0m [90m 22 |[39m       [36mconst[39m newUsers[33m:[39m [33mAppUser[39m[] [33m=[39m [][33m;[39m[0m
+                                    [0m [90m 23 |[39m       querySnapshot[33m.[39mforEach((doc) [33m=>[39m {[0m
+                                    [0m [90m 24 |[39m         newUsers[33m.[39mpush({ id[33m:[39m doc[33m.[39mid[33m,[39m [33m...[39mdoc[33m.[39mdata() } [36mas[39m [33mAppUser[39m)[33m;[39m[0m
+2025-11-29T15:56:36.927Z [WARNING]: Next.js build worker exited with code: 1 and signal: null
+2025-11-29T15:56:36.992Z [ERROR]: !!! Build failed
+2025-11-29T15:56:36.993Z [INFO]: Please read more about Amplify Hosting's support for SSR frameworks to find if your build failure is related to an unsupported feature: https://docs.aws.amazon.com/amplify/latest/userguide/amplify-ssr-framework-support.html. You may also find this troubleshooting guide useful: https://docs.aws.amazon.com/amplify/latest/userguide/troubleshooting-ssr-deployment.html
+2025-11-29T15:56:36.993Z [ERROR]: !!! Error: Command failed with exit code 1
+2025-11-29T15:56:36.993Z [INFO]: # Starting environment caching...
+2025-11-29T15:56:36.993Z [INFO]: # Environment caching completed
+
