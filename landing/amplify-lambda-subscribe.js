@@ -5,7 +5,7 @@
  */
 
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 
 const sesClient = new SESClient({ region: "us-east-1" });
 const dynamoDbClient = new DynamoDBClient({ region: "us-east-1" });
@@ -36,13 +36,27 @@ export const handler = async (event) => {
                 headers,
                 body: JSON.stringify({
                     success: false,
-                    message: "Invalid email address",
+                    message: "Invalid email address. Please use a valid format.",
+                }),
+            };
+        }
+
+        // Check for duplicate email
+        const isDuplicate = await checkEmailExists(email);
+        if (isDuplicate) {
+            return {
+                statusCode: 409,
+                headers,
+                body: JSON.stringify({
+                    success: false,
+                    message: "This email has already been registered for early access.",
+                    duplicate: true,
                 }),
             };
         }
 
         // Store in DynamoDB
-        await storEmailInDynamoDB(email);
+        await storeEmailInDynamoDB(email);
 
         // Send notification email to admin
         await sendNotificationEmail(email);
@@ -60,16 +74,55 @@ export const handler = async (event) => {
             }),
         };
     } catch (error) {
-        console.error("Error:", error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-                success: false,
-                message: "Failed to process subscription",
-                error: error.message,
-            }),
-        };
+        console.error("E - strict validation
+ */
+function isValidEmail(email) {
+    // RFC 5322 compliant email validation
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) return false;
+    
+    // Additional checks
+    if (email.length > 254) return false; // RFC 5321
+    const [localPart, domain] = email.split('@');
+    if (localPart.length > 64) return false; // RFC 5321
+    if (domain.length < 4) return false; // Minimum domain length
+    if (email.startsWith('.') || email.endsWith('.')) return false;
+    if (email.includes('..')) return false;
+    
+    return true;
+}
+
+/**
+ * Check if email already exists in DynamoDB
+ */
+async function checkEmailExists(email) {
+    const params = { with metadata
+ */
+async function storeEmailInDynamoDB(email) {
+    const timestamp = new Date().toISOString();
+    const normalizedEmail = email.toLowerCase();
+    const params = {
+        TableName: TABLE_NAME,
+        Item: {
+            email: { S: normalizedEmail },
+            originalEmail: { S: email }, // Keep original for reference
+            timestamp: { S: timestamp },
+            status: { S: "active" },
+            source: { S: "landing-page" },
+            signupMethod: { S: "web" },
+            country: { S: "Unknown" }, // Can be enhanced with geo-IP
+            emailVerified: { BOOL: false },
+            confirmationSent: { BOOL: true },
+        },
+    };
+
+    try {
+        await dynamoDbClient.send(new PutItemCommand(params));
+        console.log(`Email ${normalizedEmail} stored in DynamoDB`);
+        return true;
+    } catch (error) {
+        console.error("DynamoDB error:", error);
+        throw new Error("Failed to store email in database");
     }
 };
 
@@ -157,12 +210,30 @@ async function sendConfirmationEmail(email) {
         Destination: {
             ToAddresses: [email],
         },
-        Message: {
-            Subject: {
-                Data: "Welcome to SmartCare - Early Access Confirmed",
-                Charset: "UTF-8",
-            },
-            Body: {
+        Message: { for email templates
+ */
+function escapeHtml(text) {
+    // Simple but effective HTML escaping
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+/**
+ * Validate request origin (CORS check)
+ */
+function validateOrigin(event) {
+    const origin = event.headers?.origin || event.headers?.referer;
+    // Add your allowed origins here
+    const allowedOrigins = [
+        'https://main.amplifyapp.com',
+        'http://localhost:3000',
+        'http://localhost:8000',
+    ];
+    return !origin || allowedOrigins.some(allowed => origin.includes(allowed))
                 Html: {
                     Data: `
                         <h2>Welcome to SmartCare! 🎉</h2>

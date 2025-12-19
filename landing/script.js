@@ -93,9 +93,9 @@
             const feedbackEl = form.querySelector('.form-feedback');
             const email = emailInput.value.trim();
 
-            // Validation
+            // Client-side validation
             if (!this.validateEmail(email)) {
-                this.showFormFeedback(feedbackEl, 'Please enter a valid email address', 'error');
+                this.showFormFeedback(feedbackEl, '❌ Please enter a valid email address', 'error');
                 this.trackEvent('form_error', { type: 'invalid_email' });
                 return;
             }
@@ -104,9 +104,10 @@
             submitBtn.disabled = true;
             const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Subscribing...';
+            feedbackEl.textContent = '';
 
             try {
-                // Submit to backend (replace with your actual endpoint)
+                // Submit to backend
                 const response = await fetch(this.config.emailServiceUrl, {
                     method: 'POST',
                     headers: {
@@ -115,19 +116,37 @@
                     body: JSON.stringify({ email }),
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
                     this.showFormFeedback(feedbackEl, '✓ Check your email for early access!', 'success');
                     form.reset();
                     emailInput.focus();
                     this.trackEvent('form_submit_success', { email: this.hashEmail(email) });
+                } else if (response.status === 409) {
+                    // Duplicate email
+                    this.showFormFeedback(
+                        feedbackEl,
+                        '⚠️ This email is already registered. Check your inbox for details.',
+                        'error'
+                    );
+                    this.trackEvent('form_error', { type: 'duplicate_email' });
+                } else if (response.status === 400) {
+                    // Invalid email
+                    this.showFormFeedback(
+                        feedbackEl,
+                        '❌ Invalid email format. Please try again.',
+                        'error'
+                    );
+                    this.trackEvent('form_error', { type: 'invalid_format' });
                 } else {
-                    throw new Error(`Server returned ${response.status}`);
+                    throw new Error(`Server returned ${response.status}: ${data.message}`);
                 }
             } catch (error) {
                 console.error('Form submission error:', error);
                 this.showFormFeedback(
                     feedbackEl,
-                    'Something went wrong. Please try again or contact us.',
+                    '❌ Something went wrong. Please try again or contact us.',
                     'error'
                 );
                 this.trackEvent('form_submit_error', { error: error.message });

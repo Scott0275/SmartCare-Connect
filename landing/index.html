@@ -88,26 +88,56 @@
     <section id="how-it-works" class="how-it-works">
         <div class="container">
             <h2>How SmartCare Works</h2>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h3>Create Patient</h3>
-                    <p>Add patient details instantly. No network required.</p>
-                    <div class="step-icon">👤</div>
+            
+            <!-- Video Demo Section -->
+            <div class="video-demo-section">
+                <h3>60-Second Product Walkthrough</h3>
+                <div class="video-container">
+                    <div class="video-placeholder">
+                        <div class="video-player">
+                            <iframe id="demo-video" 
+                                    width="100%" 
+                                    height="500" 
+                                    src="about:blank" 
+                                    title="SmartCare 60-Second Demo"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                            </iframe>
+                            <div class="video-overlay" id="video-overlay">
+                                <div class="play-button">▶</div>
+                                <p>Watch our 60-second demo<br><span class="video-subtitle">See SmartCare in action</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="video-description">Document patient visits in under 60 seconds. Works completely offline. Sync automatically when connected.</p>
                 </div>
-                <div class="step-divider"></div>
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h3>Record Visit Offline</h3>
-                    <p>Document treatment in under 60 seconds. All locally saved.</p>
-                    <div class="step-icon">✍️</div>
-                </div>
-                <div class="step-divider"></div>
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h3>Auto-Sync Securely</h3>
-                    <p>Sync instantly when internet returns. Zero data loss.</p>
-                    <div class="step-icon">🔄</div>
+            </div>
+            
+            <!-- Step-by-Step Guide -->
+            <div class="steps-container">
+                <h3>The Process</h3>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Create Patient</h3>
+                        <p>Add patient details instantly. No network required.</p>
+                        <div class="step-icon">👤</div>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Record Visit Offline</h3>
+                        <p>Document treatment in under 60 seconds. All locally saved.</p>
+                        <div class="step-icon">✍️</div>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Auto-Sync Securely</h3>
+                        <p>Sync instantly when internet returns. Zero data loss.</p>
+                        <div class="step-icon">🔄</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -257,5 +287,22 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Initialize video demo section
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoOverlay = document.getElementById('video-overlay');
+            const demoVideo = document.getElementById('demo-video');
+            
+            if (videoOverlay) {
+                videoOverlay.addEventListener('click', function() {
+                    // Replace with actual video URL when available
+                    // For now, show placeholder with YouTube embed example
+                    const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+                    demoVideo.src = videoUrl;
+                    videoOverlay.style.display = 'none';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
