@@ -74,29 +74,49 @@ export const handler = async (event) => {
             }),
         };
     } catch (error) {
-        console.error("E - strict validation
+        console.error("Error:", error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                success: false,
+                message: "Internal server error. Please try again later.",
+                error: error.message,
+            }),
+        };
+    }
+};
+
+/**
+ * Validate email format
  */
 function isValidEmail(email) {
-    // RFC 5322 compliant email validation
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!re.test(email)) return false;
-    
-    // Additional checks
-    if (email.length > 254) return false; // RFC 5321
-    const [localPart, domain] = email.split('@');
-    if (localPart.length > 64) return false; // RFC 5321
-    if (domain.length < 4) return false; // Minimum domain length
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-    if (email.includes('..')) return false;
-    
-    return true;
+    return re.test(email);
 }
 
 /**
  * Check if email already exists in DynamoDB
  */
 async function checkEmailExists(email) {
-    const params = { with metadata
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            email: { S: email.toLowerCase() },
+        },
+    };
+
+    try {
+        const result = await dynamoDbClient.send(new GetItemCommand(params));
+        return !!result.Item;
+    } catch (error) {
+        console.error("DynamoDB check error:", error);
+        return false;
+    }
+}
+
+/**
+ * Store email in DynamoDB
  */
 async function storeEmailInDynamoDB(email) {
     const timestamp = new Date().toISOString();
@@ -105,12 +125,11 @@ async function storeEmailInDynamoDB(email) {
         TableName: TABLE_NAME,
         Item: {
             email: { S: normalizedEmail },
-            originalEmail: { S: email }, // Keep original for reference
+            originalEmail: { S: email },
             timestamp: { S: timestamp },
             status: { S: "active" },
             source: { S: "landing-page" },
             signupMethod: { S: "web" },
-            country: { S: "Unknown" }, // Can be enhanced with geo-IP
             emailVerified: { BOOL: false },
             confirmationSent: { BOOL: true },
         },
@@ -124,38 +143,6 @@ async function storeEmailInDynamoDB(email) {
         console.error("DynamoDB error:", error);
         throw new Error("Failed to store email in database");
     }
-};
-
-/**
- * Validate email format
- */
-function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-/**
- * Store email in DynamoDB
- */
-async function storEmailInDynamoDB(email) {
-    const timestamp = new Date().toISOString();
-    const params = {
-        TableName: TABLE_NAME,
-        Item: {
-            email: { S: email },
-            timestamp: { S: timestamp },
-            status: { S: "pending" },
-            source: { S: "landing-page" },
-        },
-    };
-
-    try {
-        await dynamoDbClient.send(new PutItemCommand(params));
-        console.log(`Email ${email} stored in DynamoDB`);
-    } catch (error) {
-        console.error("DynamoDB error:", error);
-        // Don't fail if DynamoDB fails, but log it
-    }
 }
 
 /**
@@ -163,13 +150,13 @@ async function storEmailInDynamoDB(email) {
  */
 async function sendNotificationEmail(email) {
     const params = {
-        Source: "noreply@smartcare.example", // Update with your verified sender email
+        Source: "noreply@smartcare.example",
         Destination: {
             ToAddresses: [RECIPIENT_EMAIL],
         },
         Message: {
             Subject: {
-                Data: "🎉 New SmartCare Early Access Signup",
+                Data: "New SmartCare Early Access Signup",
                 Charset: "UTF-8",
             },
             Body: {
@@ -179,12 +166,6 @@ async function sendNotificationEmail(email) {
                         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
                         <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
                         <p><strong>Source:</strong> Landing Page</p>
-                        <hr>
-                        <p>
-                            <a href="https://console.aws.amazon.com/dynamodbv2">
-                                View in DynamoDB
-                            </a>
-                        </p>
                     `,
                     Charset: "UTF-8",
                 },
@@ -206,49 +187,27 @@ async function sendNotificationEmail(email) {
  */
 async function sendConfirmationEmail(email) {
     const params = {
-        Source: "noreply@smartcare.example", // Update with your verified sender email
+        Source: "noreply@smartcare.example",
         Destination: {
             ToAddresses: [email],
         },
-        Message: { for email templates
- */
-function escapeHtml(text) {
-    // Simple but effective HTML escaping
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
-
-/**
- * Validate request origin (CORS check)
- */
-function validateOrigin(event) {
-    const origin = event.headers?.origin || event.headers?.referer;
-    // Add your allowed origins here
-    const allowedOrigins = [
-        'https://main.amplifyapp.com',
-        'http://localhost:3000',
-        'http://localhost:8000',
-    ];
-    return !origin || allowedOrigins.some(allowed => origin.includes(allowed))
+        Message: {
+            Subject: {
+                Data: "Welcome to SmartCare!",
+                Charset: "UTF-8",
+            },
+            Body: {
                 Html: {
                     Data: `
-                        <h2>Welcome to SmartCare! 🎉</h2>
-                        <p>Thank you for signing up for early access to SmartCare - the offline-first EHR system for small clinics.</p>
-                        
+                        <h2>Welcome to SmartCare!</h2>
+                        <p>Thank you for signing up for early access to SmartCare.</p>
                         <h3>What to Expect</h3>
                         <ul>
                             <li>Early access to the SmartCare platform</li>
                             <li>Exclusive beta features</li>
                             <li>Priority support from our team</li>
-                            <li>Special launch pricing</li>
                         </ul>
-                        
                         <p>We'll be in touch soon with more details!</p>
-                        
                         <p>Best regards,<br><strong>The SmartCare Team</strong></p>
                     `,
                     Charset: "UTF-8",
@@ -270,7 +229,10 @@ function validateOrigin(event) {
  * Escape HTML special characters
  */
 function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
