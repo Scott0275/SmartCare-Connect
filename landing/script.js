@@ -9,8 +9,9 @@
     const app = {
         // Configuration
         config: {
-            emailServiceUrl: 'https://zon8maijih.execute-api.us-east-1.amazonaws.com/prod', // Amplify API Gateway endpoint
+            emailServiceUrl: process.env.REACT_APP_API_ENDPOINT || 'https://zon8maijah.execute-api.us-east-1.amazonaws.com/prod', // Amplify API Gateway endpoint
             form: null,
+            demoForm: null,
             mobileMenuBtn: null,
             navbar: null,
         },
@@ -25,6 +26,7 @@
         // Cache DOM elements
         cacheElements() {
             this.config.form = document.querySelector('.email-form');
+            this.config.demoForm = document.querySelector('#demoForm');
             this.config.mobileMenuBtn = document.querySelector('.mobile-menu-btn');
             this.config.navbar = document.querySelector('.navbar');
         },
@@ -36,9 +38,14 @@
                 this.config.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
             }
 
-            // Email form submission
+            // Email form submission (index.html)
             if (this.config.form) {
                 this.config.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
+            }
+
+            // Demo booking form submission (book.html)
+            if (this.config.demoForm) {
+                this.config.demoForm.addEventListener('submit', (e) => this.handleDemoFormSubmit(e));
             }
 
             // Smooth scroll navigation
@@ -113,7 +120,10 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email }),
+                    body: JSON.stringify({ 
+                        type: 'newsletter',
+                        email 
+                    }),
                 });
 
                 const data = await response.json();
@@ -167,12 +177,33 @@
             element.classList.remove('success', 'error');
             element.classList.add(type);
 
-            // Auto-clear success messages after 5 seconds
+            // Make success messages more prominent
             if (type === 'success') {
+                element.style.display = 'block';
+                element.style.padding = '16px 20px';
+                element.style.borderRadius = '8px';
+                element.style.backgroundColor = '#d4edda';
+                element.style.color = '#155724';
+                element.style.border = '1px solid #c3e6cb';
+                element.style.marginTop = '12px';
+                element.style.fontWeight = '500';
+                element.style.fontSize = '16px';
+                
+                // Auto-clear success messages after 8 seconds
                 setTimeout(() => {
                     element.textContent = '';
                     element.classList.remove('success');
-                }, 5000);
+                    element.style.display = 'none';
+                }, 8000);
+            } else {
+                element.style.display = 'block';
+                element.style.padding = '16px 20px';
+                element.style.borderRadius = '8px';
+                element.style.backgroundColor = '#f8d7da';
+                element.style.color = '#721c24';
+                element.style.border = '1px solid #f5c6cb';
+                element.style.marginTop = '12px';
+                element.style.fontWeight = '500';
             }
         },
 
@@ -229,6 +260,96 @@
 
             // Track scroll event
             this.trackEvent('smooth_scroll', { target: href });
+        },
+
+        /**
+         * Handle demo booking form submission
+         */
+        async handleDemoFormSubmit(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            const formData = new FormData(form);
+
+            // Gather form data
+            const demoData = {
+                fullName: formData.get('fullName'),
+                title: formData.get('title'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                hospitalName: formData.get('hospitalName'),
+                hospitalState: formData.get('hospitalState'),
+                bedCount: formData.get('bedCount'),
+                departments: formData.getAll('departments'),
+                challenges: formData.getAll('challenges'),
+                demoTime: formData.get('demoTime'),
+                attendees: formData.get('attendees'),
+                additionalInfo: formData.get('additionalInfo'),
+                timestamp: new Date().toISOString(),
+            };
+
+            // Validate essential fields
+            if (!demoData.email || !demoData.fullName || !demoData.hospitalName) {
+                const feedbackEl = form.querySelector('.form-feedback') || document.createElement('div');
+                this.showFormFeedback(
+                    feedbackEl,
+                    '❌ Please fill in all required fields.',
+                    'error'
+                );
+                this.trackEvent('demo_form_error', { type: 'missing_fields' });
+                return;
+            }
+
+            // Disable button during submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Scheduling...';
+
+            try {
+                // Submit to backend
+                const response = await fetch(this.config.emailServiceUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: 'demo_booking',
+                        ...demoData,
+                    }),
+                });
+
+                if (response.ok) {
+                    const feedbackEl = form.querySelector('.form-note') || document.createElement('div');
+                    this.showFormFeedback(
+                        feedbackEl,
+                        '✓ Thank you! Your demo has been scheduled.\nWe\'ll contact you within 24 hours to confirm.',
+                        'success'
+                    );
+                    form.reset();
+                    this.trackEvent('demo_form_submit_success', { email: this.hashEmail(demoData.email) });
+                    
+                    // Scroll to confirmation message
+                    setTimeout(() => {
+                        feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                } else {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Demo form submission error:', error);
+                const feedbackEl = form.querySelector('.form-note') || document.createElement('div');
+                this.showFormFeedback(
+                    feedbackEl,
+                    '❌ Something went wrong. Please try again or contact us.',
+                    'error'
+                );
+                this.trackEvent('demo_form_submit_error', { error: error.message });
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
         },
 
         /**

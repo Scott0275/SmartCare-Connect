@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Book a personalized SmartCare demo. See how offline EHR works for your hospital.">
+    <meta name="theme-color" content="#0066cc">
+    <title>Book a Demo - SmartCare</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">⚕️</span>
+                <span class="logo-text"><a href="index.html" style="text-decoration: none; color: inherit;">SmartCare</a></span>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" role="navigation">
+                <li><a href="company.html">Company</a></li>
+                <li><a href="solution.html">Our Solution</a></li>
+                <li><a href="clients.html">Hospitals We Serve</a></li>
+                <li><a href="book.html" class="nav-cta active">Book Demo</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero hero-secondary">
+        <div class="container">
+            <h1>See SmartCare<br><span class="highlight">In Action</span></h1>
+            <p class="hero-subtext">Schedule a personalized demo and discover how offline EHR can transform your hospital's workflow.</p>
+        </div>
+    </section>
+
+    <!-- Two Column Layout -->
+    <section class="booking-section">
+        <div class="container">
+            <div class="booking-layout">
+                <!-- Left Column: Form -->
+                <div class="booking-form-col">
+                    <h2>Tell Us About Your Hospital</h2>
+                    <p class="form-intro">We'll customize the demo to your specific challenges and show you exactly how SmartCare solves them.</p>
+
+                    <form id="demoForm" class="demo-form">
+                        <!-- Personal Information -->
+                        <fieldset class="form-group">
+                            <legend class="fieldset-title">Your Information</legend>
+
+                            <div class="form-field">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" required placeholder="John Adekunle">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="title">Title/Position *</label>
+                                <input type="text" id="title" name="title" required placeholder="Hospital Director, IT Manager, etc.">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required placeholder="your@hospital.com">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required placeholder="+234 701 234 5678">
+                            </div>
+                        </fieldset>
+
+                        <!-- Hospital Information -->
+                        <fieldset class="form-group">
+                            <legend class="fieldset-title">Hospital Information</legend>
+
+                            <div class="form-field">
+                                <label for="hospitalName">Hospital/Clinic Name *</label>
+                                <input type="text" id="hospitalName" name="hospitalName" required placeholder="Your Hospital Name">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="hospitalState">State/Location *</label>
+                                <select id="hospitalState" name="hospitalState" required>
+                                    <option value="">Select State</option>
+                                    <option value="Lagos">Lagos</option>
+                                    <option value="Ogun">Ogun</option>
+                                    <option value="Oyo">Oyo</option>
+                                    <option value="Abuja">Abuja (FCT)</option>
+                                    <option value="Kano">Kano</option>
+                                    <option value="Rivers">Rivers</option>
+                                    <option value="Katsina">Katsina</option>
+                                    <option value="Kaduna">Kaduna</option>
+                                    <option value="Enugu">Enugu</option>
+                                    <option value="Akwa Ibom">Akwa Ibom</option>
+                                    <option value="Other">Other State</option>
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="bedCount">Bed Count *</label>
+                                <select id="bedCount" name="bedCount" required>
+                                    <option value="">Select Range</option>
+                                    <option value="10-25">10-25 beds</option>
+                                    <option value="25-50">25-50 beds</option>
+                                    <option value="50-100">50-100 beds</option>
+                                    <option value="100-200">100-200 beds</option>
+                                    <option value="200+">200+ beds</option>
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="departments">Primary Departments *</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="emergency" name="departments" value="Emergency Care">
+                                        <label for="emergency">Emergency/Accident & Emergency</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="outpatient" name="departments" value="Outpatient">
+                                        <label for="outpatient">Outpatient (General)</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="inpatient" name="departments" value="Inpatient">
+                                        <label for="inpatient">Inpatient Ward</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="maternity" name="departments" value="Maternity">
+                                        <label for="maternity">Maternity/Obstetrics</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="lab" name="departments" value="Laboratory">
+                                        <label for="lab">Laboratory</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="pharmacy" name="departments" value="Pharmacy">
+                                        <label for="pharmacy">Pharmacy</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Current Challenges -->
+                        <fieldset class="form-group">
+                            <legend class="fieldset-title">Your Current Challenges</legend>
+                            <p class="fieldset-description">Help us understand what problems you're trying to solve</p>
+
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-internet" name="challenges" value="Internet Reliability">
+                                    <label for="challenge-internet">Unreliable internet/frequent outages</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-documentation" name="challenges" value="Documentation Speed">
+                                    <label for="challenge-documentation">Slow documentation slowing down care</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-billing" name="challenges" value="Billing Issues">
+                                    <label for="challenge-billing">Missed charges / billing problems</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-records" name="challenges" value="Records Management">
+                                    <label for="challenge-records">Lost or incomplete patient records</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-current" name="challenges" value="Current System Issues">
+                                    <label for="challenge-current">Current system is too complex/slow</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="challenge-data" name="challenges" value="Data Control">
+                                    <label for="challenge-data">Data control and security concerns</label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Demo Preferences -->
+                        <fieldset class="form-group">
+                            <legend class="fieldset-title">Demo Preferences</legend>
+
+                            <div class="form-field">
+                                <label>Preferred Demo Time Slot *</label>
+                                <div class="radio-group">
+                                    <div class="radio-item">
+                                        <input type="radio" id="slot-morning" name="demoTime" value="morning" required>
+                                        <label for="slot-morning">Morning (9 AM - 12 PM)</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input type="radio" id="slot-afternoon" name="demoTime" value="afternoon" required>
+                                        <label for="slot-afternoon">Afternoon (2 PM - 5 PM)</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input type="radio" id="slot-flexible" name="demoTime" value="flexible" required>
+                                        <label for="slot-flexible">Flexible - Let's Schedule</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="attendees">Number of People Attending the Demo *</label>
+                                <select id="attendees" name="attendees" required>
+                                    <option value="">Select Count</option>
+                                    <option value="1">Just me (1)</option>
+                                    <option value="2-3">2-3 people</option>
+                                    <option value="4-5">4-5 people</option>
+                                    <option value="6+">6+ people</option>
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="additionalInfo">Additional Information or Questions</label>
+                                <textarea id="additionalInfo" name="additionalInfo" rows="4" placeholder="Tell us anything else we should know to make this demo perfect for you..."></textarea>
+                            </div>
+                        </fieldset>
+
+                        <!-- Privacy & Compliance -->
+                        <fieldset class="form-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="privacy" name="privacy" required>
+                                <label for="privacy">I agree to the <a href="#privacy">Privacy Policy</a> and understand my data will be used to schedule and follow up on my demo request.</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="contact" name="contact">
+                                <label for="contact">Yes, I'd like to receive updates about SmartCare features and improvements.</label>
+                            </div>
+                        </fieldset>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Schedule My Demo</button>
+                        <div class="form-note" role="status" aria-live="polite"></div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Benefits & Social Proof -->
+                <div class="booking-info-col">
+                    <!-- What to Expect -->
+                    <div class="booking-card">
+                        <h3>What to Expect</h3>
+                        <div class="expectation-list">
+                            <div class="expectation-item">
+                                <div class="expectation-number">1</div>
+                                <div class="expectation-content">
+                                    <h4>Quick Call (5 min)</h4>
+                                    <p>We'll briefly discuss your hospital's main challenges.</p>
+                                </div>
+                            </div>
+
+                            <div class="expectation-item">
+                                <div class="expectation-number">2</div>
+                                <div class="expectation-content">
+                                    <h4>Live Demo (15 min)</h4>
+                                    <p>See SmartCare working offline, handling 3 patient visits, showing real speed.</p>
+                                </div>
+                            </div>
+
+                            <div class="expectation-item">
+                                <div class="expectation-number">3</div>
+                                <div class="expectation-content">
+                                    <h4>Q&A (10 min)</h4>
+                                    <p>Ask anything. We'll answer honestly about features, costs, implementation.</p>
+                                </div>
+                            </div>
+
+                            <div class="expectation-item">
+                                <div class="expectation-number">4</div>
+                                <div class="expectation-content">
+                                    <h4>Next Steps</h4>
+                                    <p>If interested, we'll discuss implementation timeline and support.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Why Book Now -->
+                    <div class="booking-card">
+                        <h3>Why Schedule Now</h3>
+                        <ul class="benefit-list">
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>See exactly how SmartCare solves YOUR challenges</span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>No obligation. No hard sells. Just a conversation.</span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>Early-stage hospitals get priority support</span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>Get a customized implementation plan</span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>30-day free trial after demo</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Trust Indicators -->
+                    <div class="booking-card">
+                        <h3>Trusted by Leading Hospitals</h3>
+                        <div class="trust-indicators">
+                            <div class="indicator">
+                                <div class="indicator-number">5</div>
+                                <p>Hospitals using SmartCare daily</p>
+                            </div>
+                            <div class="indicator">
+                                <div class="indicator-number">99.9%</div>
+                                <p>Records availability even offline</p>
+                            </div>
+                            <div class="indicator">
+                                <div class="indicator-number">60%</div>
+                                <p>Faster documentation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div class="booking-card">
+                        <h3>Quick Questions?</h3>
+                        <div class="faq-mini">
+                            <details class="faq-item">
+                                <summary>How long is the demo?</summary>
+                                <p>About 30 minutes total—perfect for a lunch break or between rounds.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary>Will we need to set up anything?</summary>
+                                <p>No. We'll demo on our system. You just watch and ask questions. No installation needed.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary>What if I have more questions after the demo?</summary>
+                                <p>We'll provide contact info for follow-up questions anytime. Our team is responsive.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary>Can I try SmartCare for free first?</summary>
+                                <p>Yes! We offer a 30-day free trial after the demo so you can see it work with your data.</p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Stories -->
+    <section class="cta-before-footer">
+        <div class="container">
+            <h2>After Their Demo, These Hospitals Saw Results</h2>
+            <div class="quick-stats">
+                <div class="stat">
+                    <span class="stat-number">Peace Healthcare</span>
+                    <span class="stat-label">60% faster documentation</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">Talent Hospital</span>
+                    <span class="stat-label">35% better billing accuracy</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">Mainland Care</span>
+                    <span class="stat-label">Zero downtime in 3 months</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>SmartCare</h4>
+                    <p>Offline-first EHR for African hospitals and clinics</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="solution.html">Our Solution</a></li>
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="index.html#how-it-works">How It Works</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="company.html">About Us</a></li>
+                        <li><a href="clients.html">Hospitals We Serve</a></li>
+                        <li><a href="book.html">Book Demo</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#hipaa">HIPAA Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SmartCare. Built for African healthcare.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

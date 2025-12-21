@@ -14,7 +14,7 @@
         <div class="nav-container">
             <div class="logo">
                 <span class="logo-icon">⚕️</span>
-                <span class="logo-text">SmartCare</span>
+                <span class="logo-text"><a href="index.html" style="text-decoration: none; color: inherit;">SmartCare</a></span>
             </div>
             <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
                 <span></span>
@@ -22,10 +22,10 @@
                 <span></span>
             </button>
             <ul class="nav-links" role="navigation">
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#who-its-for">Who It's For</a></li>
-                <li><a href="#cta" class="nav-cta">Early Access</a></li>
+                <li><a href="company.html">Company</a></li>
+                <li><a href="solution.html">Our Solution</a></li>
+                <li><a href="clients.html">Hospitals We Serve</a></li>
+                <li><a href="book.html" class="nav-cta">Book Demo</a></li>
             </ul>
         </div>
     </nav>
@@ -39,10 +39,10 @@
             <p class="hero-subheadline">
                 Document visits in under 60 seconds. Never lose a patient record. Automatically sync when connected.
             </p>
-            <button class="btn btn-primary btn-lg" data-scroll-target="#cta" aria-label="Request early access">
-                Request Early Access
+            <a href="book.html" class="btn btn-primary btn-lg" aria-label="Book a demo">
+                Book a Demo
                 <span class="arrow">→</span>
-            </button>
+            </a>
             <p class="hero-trust">Used by forward-thinking clinics across Africa and Asia</p>
         </div>
         <div class="hero-illustration">
@@ -261,14 +261,22 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>SmartCare</h4>
-                    <p>Offline-first EHR for small clinics</p>
+                    <p>Offline-first EHR for African hospitals and clinics</p>
                 </div>
                 <div class="footer-section">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
-                        <li><a href="#who-its-for">Who It's For</a></li>
+                        <li><a href="solution.html">Our Solution</a></li>
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="index.html#how-it-works">How It Works</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="company.html">About Us</a></li>
+                        <li><a href="clients.html">Hospitals We Serve</a></li>
+                        <li><a href="book.html">Book Demo</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -281,7 +289,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 SmartCare. Built for clinics, by clinicians.</p>
+                <p>&copy; 2025 SmartCare. Built for African healthcare.</p>
             </div>
         </div>
     </footer>
@@ -295,9 +303,8 @@
             
             if (videoOverlay) {
                 videoOverlay.addEventListener('click', function() {
-                    // Replace with actual video URL when available
-                    // For now, show placeholder with YouTube embed example
-                    const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+                    // Replace with actual video URL
+                    const videoUrl = 'https://www.youtube.com/embed/i-wyZSF6LgY';
                     demoVideo.src = videoUrl;
                     videoOverlay.style.display = 'none';
                 });

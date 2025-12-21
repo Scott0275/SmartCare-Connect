@@ -1,0 +1,13 @@
+<!-- SmartCare Environment Configuration Loader -->
+<!-- Add this script BEFORE script.js in all HTML files -->
+<script>
+  // Set API endpoint from Vercel environment variables
+  (function() {
+    // Try to get from window variable set by build process
+    if (!window.__SMARTCARE_API_ENDPOINT__) {
+      // Fallback to default (production endpoint)
+      window.__SMARTCARE_API_ENDPOINT__ = 'https://zon8maijah.execute-api.us-east-1.amazonaws.com/prod';
+    }
+    console.log('[SmartCare] Using API endpoint:', window.__SMARTCARE_API_ENDPOINT__);
+  })();
+</script>

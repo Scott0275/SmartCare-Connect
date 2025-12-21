@@ -1,0 +1,14 @@
+{
+  "name": "smartcare-landing",
+  "version": "1.0.0",
+  "description": "SmartCare Landing Page - Offline-first EHR for small clinics",
+  "private": true,
+  "dependencies": {
+    "nodemailer": "^6.9.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  }
+}
